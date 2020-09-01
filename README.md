@@ -4,6 +4,29 @@ A UTF-8 String Library made in Zig
 I made this for the sole purpose to further my experience and understanding of zig.
 Also it may be useful for some people who need it (including myself), with future projects.
 
+# Basic Usage
+```zig
+const String = @import("./zig-string.zig").String;
+// ...
+
+// Use your favorite allocator
+var arena = ArenaAllocator.init(std.heap.page_allocator);
+defer arena.deinit();
+
+// Create your String
+var myString = String.init(&arena.allocator);
+defer myString.deinit();
+
+// Use functions provided
+try myString.concat("Hello!");
+_ = myString.pop();
+try myString.concat(", World!");
+
+// Success!
+assert(myString.cmp("Hello, World!"));
+
+```
+
 # Things needed
 - Optimizations
 - Any missing useful functionality
