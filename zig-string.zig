@@ -1,8 +1,6 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArenaAllocator = std.heap.ArenaAllocator;
-const assert = std.testing.expect;
-
 const defaultCapacity: usize = 16;
 
 const StringError = error{
@@ -12,7 +10,7 @@ const StringError = error{
 /// A variable length string literal
 // TODO: Add Memory Warnings
 // TODO: Determine if Error or Optional Return
-const String = struct {
+pub const String = struct {
     /// The internal buffer of the string.
     /// Use str() instead of accessing the buffer itself.
     buffer: ?[]u8,
