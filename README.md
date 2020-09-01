@@ -32,6 +32,7 @@ assert(myString.cmp("Hello, World!"));
 - Any missing useful functionality
 - Better documentation
 - More Tests
+- Unicode Support
 
 # How to Contribute
 1. Fork
