@@ -45,7 +45,7 @@ assert(myString.cmp("Hello, World!"));
 If there are any issues with <b>complexity</b> please <b>open an issue</b>
 (I'm no expert when it comes to complexity)
 
-Function      | Description                          | Complexity (Best)
+Function      | Short Description                    | Complexity (Best)
 --------------|--------------------------------------|-----------
 init          | Creates a String with an Allocator   | O(1)
 deinit        | De-allocates the String              | O(1)
