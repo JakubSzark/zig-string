@@ -19,6 +19,7 @@ Also it may be useful for some people who need it (including myself), with futur
 
 # Working Features
 If there are any issues with <b>complexity</b> please <b>open an issue</b>
+(I'm no expert when it comes to complexity)
 
 Function      | Description                          | Complexity (Best)
 --------------|--------------------------------------|-----------
