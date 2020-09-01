@@ -14,8 +14,9 @@ Also it may be useful for some people who need it (including myself), with futur
 1. Fork
 2. Clone
 3. Add Features (Use Zig FMT)
-4. Make Pull Request
-5. Success!
+4. Make a Test
+5. Pull Request
+6. Success!
 
 # Working Features
 If there are any issues with <b>complexity</b> please <b>open an issue</b>
