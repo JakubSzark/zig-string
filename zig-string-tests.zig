@@ -1,9 +1,32 @@
 const std = @import("std");
-const Allocator = std.mem.Allocator;
 const ArenaAllocator = std.heap.ArenaAllocator;
-const assert = std.testing.expect;
+const assert = std.debug.assert;
+const eql = std.mem.eql;
 
-const String = @import("./zig-string.zig").String;
+const zig_string = @import("./zig-string.zig");
+const String = zig_string.String;
+const Utility = zig_string.Utility;
+
+test "Utility Tests" {
+    // getUTF8Size
+    assert(Utility.getUTF8Size("A"[0]) == 1);
+    assert(Utility.getUTF8Size("\u{5360}"[0]) == 3);
+    assert(Utility.getUTF8Size("💯"[0]) == 4);
+
+    // getRealIndex
+    const myliteral = "🔥Hello\u{5360}🔥";
+    assert(Utility.getIndex(myliteral, 6, true).? == 9);
+
+    // isWhitespace
+    assert(Utility.isWhitespace('\n'));
+
+    // isUTF8Byte
+    assert(Utility.isUTF8Byte("💯"[3]));
+    assert(Utility.isUTF8Byte("\u{5360}"[2]));
+    assert(Utility.isUTF8Byte("🔥"[1]));
+    assert(!Utility.isUTF8Byte("🔥"[0]));
+    assert(!Utility.isUTF8Byte("A"[0]));
+}
 
 test "Basic Usage" {
     // Use your favorite allocator
@@ -15,90 +38,121 @@ test "Basic Usage" {
     defer myString.deinit();
 
     // Use functions provided
-    try myString.concat("Hello!");
+    try myString.concat("🔥 Hello!");
     _ = myString.pop();
-    try myString.concat(", World!");
+    try myString.concat(", World 🔥");
 
     // Success!
-    assert(myString.cmp("Hello, World!"));
+    assert(myString.cmp("🔥 Hello, World 🔥"));
 }
 
-test "Basic String Operations" {
-    var arena = ArenaAllocator.init(std.heap.page_allocator);
+test "String Tests" {
+    // Allocator for the String
+    const page_allocator = std.heap.page_allocator;
+    var arena = std.heap.ArenaAllocator.init(page_allocator);
     defer arena.deinit();
 
-    const allocator = &arena.allocator;
-    var hello = String.init(allocator);
-    defer hello.deinit();
+    // This is how we create the String
+    var myStr = String.init(&arena.allocator);
+    defer myStr.deinit();
 
-    try hello.setCapacity(13);
-    try hello.concat("Hello");
-    try hello.concat(", World");
+    // allocate & capacity
+    try myStr.allocate(16);
+    assert(myStr.capacity() == 16);
+    assert(myStr.size == 0);
 
-    assert(hello.cmp("Hello, World"));
+    // truncate
+    try myStr.truncate();
+    assert(myStr.capacity() == myStr.size);
+    assert(myStr.capacity() == 0);
 
-    try hello.push('!');
+    // concat
+    try myStr.concat("A");
+    try myStr.concat("\u{5360}");
+    try myStr.concat("💯");
+    try myStr.concat("Hello🔥");
 
-    assert(hello.cmp("Hello, World!"));
-    assert(hello.len == 13);
-    assert(hello.pop().? == '!');
+    assert(myStr.size == 17);
 
-    const helloSub = try hello.substr(0, 5);
-    assert(helloSub.cmp("Hello"));
-    helloSub.deinit();
+    // pop & length
+    assert(myStr.len() == 9);
+    assert(eql(u8, myStr.pop().?, "🔥"));
+    assert(myStr.len() == 8);
+    assert(eql(u8, myStr.pop().?, "o"));
+    assert(myStr.len() == 7);
 
-    assert(hello.remove(5).? == ',');
-    assert(hello.len == 11);
-    assert(hello.cmp("Hello World"));
-    assert(hello.contains("World"));
+    // str & cmp
+    assert(myStr.cmp("A\u{5360}💯Hell"));
+    assert(myStr.cmp(myStr.str()));
 
-    try hello.removeRange(6, hello.len);
-    assert(hello.cmp("Hello "));
+    // charAt
+    assert(eql(u8, myStr.charAt(2).?, "💯"));
+    assert(eql(u8, myStr.charAt(1).?, "\u{5360}"));
+    assert(eql(u8, myStr.charAt(0).?, "A"));
 
-    try hello.compact();
-    assert(hello.capacity() == hello.len);
+    // insert
+    try myStr.insert("🔥", 1);
+    assert(eql(u8, myStr.charAt(1).?, "🔥"));
+    assert(myStr.cmp("A🔥\u{5360}💯Hell"));
 
-    var hello2 = try hello.clone();
-    defer hello2.deinit();
+    // find
+    assert(myStr.find("🔥").? == 1);
+    assert(myStr.find("💯").? == 3);
+    assert(myStr.find("Hell").? == 4);
 
-    assert(hello2.cmp("Hello "));
-    try hello2.repeat(2);
-    assert(hello2.cmp("Hello Hello Hello "));
+    // remove & removeRange
+    try myStr.removeRange(0, 3);
+    assert(myStr.cmp("💯Hell"));
+    try myStr.remove(myStr.len() - 1);
+    assert(myStr.cmp("💯Hel"));
 
-    assert(hello.charAt(1).? == 'e');
-}
+    // trimStart
+    try myStr.insert("      ", 0);
+    myStr.trimStart();
+    assert(myStr.cmp("💯Hel"));
 
-test "Conversion and Query Tests" {
-    var arena = ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
+    // trimEnd
+    try myStr.concat("lo💯\n      ");
+    myStr.trimEnd();
+    assert(myStr.cmp("💯Hello💯"));
 
-    const allocator = &arena.allocator;
-    var myString = String.init(allocator);
-    defer myString.deinit();
+    // clone
+    var testStr = try myStr.clone();
+    defer testStr.deinit();
+    assert(testStr.cmp(myStr.str()));
 
-    try myString.concat("       Test T   ");
-    myString.trimStart();
-    assert(myString.cmp("Test T   "));
-    myString.trimEnd();
-    assert(myString.cmp("Test T"));
+    // reverse
+    myStr.reverse();
+    assert(myStr.cmp("💯olleH💯"));
+    myStr.reverse();
+    assert(myStr.cmp("💯Hello💯"));
 
-    myString.toLowercase();
-    assert(myString.cmp("test t"));
-    myString.toUppercase();
-    assert(myString.cmp("TEST T"));
-    assert(myString.find('T').? == 0);
+    // repeat
+    try myStr.repeat(2);
+    assert(myStr.cmp("💯Hello💯💯Hello💯💯Hello💯"));
 
-    assert(std.mem.eql(u8, myString.split(' ', 0).?, "TEST"));
-    assert(std.mem.eql(u8, myString.split(' ', 1).?, "T"));
-    assert(myString.split(' ', 2) == null);
+    // isEmpty
+    assert(!myStr.isEmpty());
 
-    try myString.insert('!', 4);
-    assert(myString.cmp("TEST! T"));
+    // split
+    assert(eql(u8, myStr.split("💯", 0).?, ""));
+    assert(eql(u8, myStr.split("💯", 1).?, "Hello"));
+    assert(eql(u8, myStr.split("💯", 2).?, ""));
+    assert(eql(u8, myStr.split("💯", 3).?, "Hello"));
 
-    myString.reverse();
-    assert(myString.cmp("T !TSET"));
-    myString.reverse();
+    // toLowercasr & toUppercase
+    myStr.toUppercase();
+    assert(myStr.cmp("💯HELLO💯💯HELLO💯💯HELLO💯"));
+    myStr.toLowercase();
+    assert(myStr.cmp("💯hello💯💯hello💯💯hello💯"));
 
-    try myString.insertStr("Hello", 5);
-    assert(myString.cmp("TEST!Hello T"));
+    // substr
+    var subStr = try myStr.substr(0, 7);
+    defer subStr.deinit();
+    assert(subStr.cmp("💯hello💯"));
+
+    // clear
+    myStr.clear();
+    assert(myStr.len() == 0);
+    assert(myStr.size == 0);
 }
