@@ -50,6 +50,7 @@ Function      | Description                              | Complexity (Best)
 --------------|------------------------------------------|-----------
 init          | Creates a String with an Allocator       | O(1)
 deinit        | De-allocates the String                  | O(1)
+len           | Returns count of characters stored       | O(n)
 clear         | Clears the contents of the String        | O(n)
 allocate      | Sets the internal buffer size            | O(1)
 capacity      | Returns the capacity of the String       | O(1)
