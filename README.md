@@ -1,5 +1,5 @@
 # Zig String (A UTF-8 String Library)
-## Now supports Unicode all characters!
+## Now supports all Unicode characters!
 
 I made this for the sole purpose to further my experience and understanding of zig.
 Also it may be useful for some people who need it (including myself), with future projects.
