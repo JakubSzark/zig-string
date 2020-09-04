@@ -137,6 +137,21 @@ pub const String = struct {
         return "";
     }
 
+    /// Returns an owned slice of this string
+    pub fn toOwned(self: String) Error!?[]u8 {
+        if (self.buffer) |buffer| {
+            const string = self.str();
+            if (self.allocator.alloc(u8, string.len)) |newStr| {
+                std.mem.copy(u8, newStr, string);
+                return newStr;
+            } else |err| {
+                return Error.OutOfMemory;
+            }
+        }
+
+        return null;
+    }
+
     /// Returns a character at the specified index
     pub fn charAt(self: String, index: usize) ?[]const u8 {
         if (self.buffer) |buffer| {
@@ -324,7 +339,7 @@ pub const String = struct {
         }
     }
 
-    /// Converts all uppercase letters to lowercase
+    /// Converts all (ASCII) uppercase letters to lowercase
     pub fn toLowercase(self: *String) void {
         if (self.buffer) |buffer| {
             var i: usize = 0;
@@ -336,7 +351,7 @@ pub const String = struct {
         }
     }
 
-    /// Converts all uppercase letters to lowercase
+    /// Converts all (ASCII) uppercase letters to lowercase
     pub fn toUppercase(self: *String) void {
         if (self.buffer) |buffer| {
             var i: usize = 0;
@@ -365,6 +380,20 @@ pub const String = struct {
 
         return result;
     }
+
+    // Writer functionality for the String.
+    pub usingnamespace struct {
+        pub const Writer = std.io.Writer(*String, Error, appendWrite);
+
+        pub fn writer(self: *String) Writer {
+            return .{ .context = self };
+        }
+
+        fn appendWrite(self: *String, m: []const u8) !usize {
+            try self.concat(m);
+            return m.len;
+        }
+    };
 };
 
 /// Contains UTF-8 utility functions
@@ -397,10 +426,15 @@ pub const Utility = struct {
     }
 
     /// Returns the UTF-8 character's size
-    pub fn getUTF8Size(char: u8) u3 {
-        var i: u3 = 0;
-        while (((char << i) & 0x80) > 0) : (i += 1) {}
-        if (i == 0) return 1;
-        return i;
+    pub inline fn getUTF8Size(char: u8) u3 {
+        if (char & 0x80 == 0) {
+            return 1;
+        } else if ((char << 2) & 0x80 == 0) {
+            return 2;
+        } else if ((char << 3) & 0x80 == 0) {
+            return 3;
+        } else {
+            return 4;
+        }
     }
 };
