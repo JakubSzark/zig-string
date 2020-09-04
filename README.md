@@ -1,5 +1,4 @@
 # Zig String (A UTF-8 String Library)
-## Now supports all Unicode characters!
 
 I made this for the sole purpose to further my experience and understanding of zig.
 Also it may be useful for some people who need it (including myself), with future projects.
@@ -29,10 +28,9 @@ assert(myString.cmp("🔥 Hello, World 🔥"));
 
 # Things needed
 - Optimizations
-- Any missing useful functionality
+- Multi-Language toUppercase & toLowercase
 - Better documentation
 - More Testing
-
 
 # How to Contribute
 1. Fork
@@ -55,17 +53,18 @@ clear         | Clears the contents of the String        | O(n)
 allocate      | Sets the internal buffer size            | O(1)
 capacity      | Returns the capacity of the String       | O(1)
 str           | Returns the String as a slice            | O(1)
-concat        | Appends a string literal to the end      | O(n)?
+concat        | Appends a string literal to the end      | O(n)
 cmp           | Compares to string literal               | O(n)
 pop           | Removes the last character               | O(1)
 substr        | Creates a string from a range            | O(n)
+toOwned       | Creates an owned slice of the String     | O(1)
 remove        | Removes a character at an index          | O(n)
 removeRange   | Removes a range of characters            | O(n)
 trimStart     | Remove whitespace from the start         | O(n)
 trimEnd       | Remove whitespace from the end           | O(n)
 trim          | Removes whitespace from both ends        | O(n)
-toLowercase   | Converts (ASCII) characters to lowercase         | O(n)
-toUppercase   | Converts (ASCII) characters to uppercase         | O(n)
+toLowercase   | Converts (ASCII) characters to lowercase | O(n)
+toUppercase   | Converts (ASCII) characters to uppercase | O(n)
 find          | Finds first string literal appearance    | O(n)
 split         | Returns a slice based on delimiter       | O(n)
 insert        | Inserts a character at an index          | O(n)

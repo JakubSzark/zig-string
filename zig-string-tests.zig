@@ -112,7 +112,7 @@ test "String Tests" {
     assert(myStr.cmp("💯Hel"));
 
     // trimEnd
-    try myStr.concat("lo💯\n      ");
+    _ = try myStr.concat("lo💯\n      ");
     myStr.trimEnd();
     assert(myStr.cmp("💯Hello💯"));
 
@@ -155,4 +155,14 @@ test "String Tests" {
     myStr.clear();
     assert(myStr.len() == 0);
     assert(myStr.size == 0);
+
+    // writer
+    const writer = myStr.writer();
+    const length = try writer.write("This is a Test!");
+    assert(length == 15);
+
+    // owned
+    const mySlice = try myStr.toOwned();
+    assert(eql(u8, mySlice.?, "This is a Test!"));
+    arena.allocator.free(mySlice.?);
 }
