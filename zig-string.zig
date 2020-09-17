@@ -394,6 +394,32 @@ pub const String = struct {
             return m.len;
         }
     };
+
+    // Iterator support
+    pub usingnamespace struct {
+        pub const StringIterator = struct {
+            string: *String,
+            index: usize,
+
+            pub fn next(it: *StringIterator) ?[]const u8 {
+                if (it.string.buffer) |buffer| {
+                    if (it.index == it.string.size) return null;
+                    var i = it.index;
+                    it.index += Utility.getUTF8Size(buffer[i]);
+                    return buffer[i..it.index];
+                } else {
+                    return null;
+                }
+            }
+        };
+
+        pub fn iterator(self: *String) StringIterator {
+            return StringIterator{
+                .string = self,
+                .index = 0,
+            };
+        }
+    };
 };
 
 /// Contains UTF-8 utility functions
