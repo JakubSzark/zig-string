@@ -165,4 +165,16 @@ test "String Tests" {
     const mySlice = try myStr.toOwned();
     assert(eql(u8, mySlice.?, "This is a Test!"));
     arena.allocator.free(mySlice.?);
+
+    // StringIterator
+    var i: usize = 0;
+    var iter = myStr.iterator();
+    while (iter.next()) |ch| {
+        if (i == 0) {
+            assert(eql(u8, "T", ch));
+        }
+        i += 1;
+    }
+
+    assert(i == myStr.len());
 }
