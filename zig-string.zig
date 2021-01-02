@@ -221,10 +221,9 @@ pub const String = struct {
     pub fn trimStart(self: *String) void {
         if (self.buffer) |buffer| {
             var i: usize = 0;
-            while (i < self.size) {
+            while (i < self.size) : (i += 1) {
                 const size = Utility.getUTF8Size(buffer[i]);
-                if (!Utility.isWhitespace(buffer[i])) break;
-                i += size;
+                if (size > 1 or !Utility.isWhitespace(buffer[i])) break;
             }
 
             if (Utility.getIndex(buffer, i, false)) |k| {
@@ -235,19 +234,9 @@ pub const String = struct {
 
     /// Trims all whitespace characters at the end of the String
     pub fn trimEnd(self: *String) void {
-        if (self.buffer) |buffer| {
-            var i: usize = self.size - 1;
-            var j: usize = 0;
-            while (i >= 0) : ({
-                i -= 1;
-                j += 1;
-            }) {
-                if (!Utility.isWhitespace(buffer[i])) break;
-                if (i == 0) break;
-            }
-
-            self.size -= j;
-        }
+        self.reverse();
+        self.trimStart();
+        self.reverse();
     }
 
     /// Trims all whitespace from both ends of the String
@@ -267,16 +256,14 @@ pub const String = struct {
     /// Reverses the characters in this String
     pub fn reverse(self: *String) void {
         if (self.buffer) |buffer| {
-            std.mem.reverse(u8, buffer[0..self.size]);
-            var i: usize = self.size - 1;
-            while (i >= 0) : (i -= 1) {
-                const size = Utility.getUTF8Size(buffer[i]) - 1;
-                if (size > 0) {
-                    std.mem.reverse(u8, buffer[(i - size)..(i + 1)]);
-                }
-                i -= size;
-                if (i == 0) break;
+            var i: usize = 0;
+            while (i < self.size) {
+                const size = Utility.getUTF8Size(buffer[i]);
+                if (size > 1) std.mem.reverse(u8, buffer[i..(i + size)]);
+                i += size;
             }
+
+            std.mem.reverse(u8, buffer[0..self.size]);
         }
     }
 
@@ -337,8 +324,10 @@ pub const String = struct {
     pub fn toLowercase(self: *String) void {
         if (self.buffer) |buffer| {
             var i: usize = 0;
-            while (i < self.size) : (i += 1) {
-                buffer[i] = std.ascii.toLower(buffer[i]);
+            while (i < self.size) {
+                const size = Utility.getUTF8Size(buffer[i]);
+                if (size == 1) buffer[i] = std.ascii.toLower(buffer[i]);
+                i += size;
             }
         }
     }
@@ -347,8 +336,10 @@ pub const String = struct {
     pub fn toUppercase(self: *String) void {
         if (self.buffer) |buffer| {
             var i: usize = 0;
-            while (i < self.size) : (i += 1) {
-                buffer[i] = std.ascii.toUpper(buffer[i]);
+            while (i < self.size) {
+                const size = Utility.getUTF8Size(buffer[i]);
+                if (size == 1) buffer[i] = std.ascii.toUpper(buffer[i]);
+                i += size;
             }
         }
     }
