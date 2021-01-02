@@ -82,7 +82,7 @@ pub const String = struct {
                 buffer[self.size + i] = literal[i];
             }
         } else {
-            if (Utility.getIndex(buffer, index, true)) |k| {
+            if (String.getIndex(buffer, index, true)) |k| {
                 // Move existing contents over
                 var i: usize = buffer.len - 1;
                 while (i >= k) : (i -= 1) {
@@ -110,7 +110,7 @@ pub const String = struct {
         if (self.buffer) |buffer| {
             var i: usize = 0;
             while (i < self.size) {
-                const size = Utility.getUTF8Size(buffer[i]);
+                const size = String.getUTF8Size(buffer[i]);
                 if (i + size >= self.size) break;
                 i += size;
             }
@@ -155,8 +155,8 @@ pub const String = struct {
     /// Returns a character at the specified index
     pub fn charAt(self: String, index: usize) ?[]const u8 {
         if (self.buffer) |buffer| {
-            if (Utility.getIndex(buffer, index, true)) |i| {
-                const size = Utility.getUTF8Size(buffer[i]);
+            if (String.getIndex(buffer, index, true)) |i| {
+                const size = String.getUTF8Size(buffer[i]);
                 return buffer[i..(i + size)];
             }
         }
@@ -170,7 +170,7 @@ pub const String = struct {
             var i: usize = 0;
 
             while (i < self.size) {
-                i += Utility.getUTF8Size(buffer[i]);
+                i += String.getUTF8Size(buffer[i]);
                 length += 1;
             }
 
@@ -185,7 +185,7 @@ pub const String = struct {
         if (self.buffer) |buffer| {
             const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
             if (index) |i| {
-                return Utility.getIndex(buffer, i, false);
+                return String.getIndex(buffer, i, false);
             }
         }
 
@@ -204,8 +204,8 @@ pub const String = struct {
         if (end < start or end > length) return Error.InvalidRange;
 
         if (self.buffer) |buffer| {
-            const rStart = Utility.getIndex(buffer, start, true).?;
-            const rEnd = Utility.getIndex(buffer, end, true).?;
+            const rStart = String.getIndex(buffer, start, true).?;
+            const rEnd = String.getIndex(buffer, end, true).?;
             const difference = rEnd - rStart;
 
             var i: usize = rEnd;
@@ -217,32 +217,32 @@ pub const String = struct {
         }
     }
 
-    /// Trims all whitespace at the start of the String
-    pub fn trimStart(self: *String) void {
+    /// Trims all whitelist characters at the start of the String.
+    pub fn trimStart(self: *String, whitelist: []const u8) void {
         if (self.buffer) |buffer| {
             var i: usize = 0;
             while (i < self.size) : (i += 1) {
-                const size = Utility.getUTF8Size(buffer[i]);
-                if (size > 1 or !Utility.isWhitespace(buffer[i])) break;
+                const size = String.getUTF8Size(buffer[i]);
+                if (size > 1 or !inWhitelist(buffer[i], whitelist)) break;
             }
 
-            if (Utility.getIndex(buffer, i, false)) |k| {
+            if (String.getIndex(buffer, i, false)) |k| {
                 self.removeRange(0, k) catch |err| {};
             }
         }
     }
 
-    /// Trims all whitespace characters at the end of the String
-    pub fn trimEnd(self: *String) void {
+    /// Trims all whitelist characters at the end of the String.
+    pub fn trimEnd(self: *String, whitelist: []const u8) void {
         self.reverse();
-        self.trimStart();
+        self.trimStart(whitelist);
         self.reverse();
     }
 
-    /// Trims all whitespace from both ends of the String
-    pub fn trim(self: *String) void {
-        self.trimStart();
-        self.trimEnd();
+    /// Trims all whitelist characters from both ends of the String
+    pub fn trim(self: *String, whitelist: []const u8) void {
+        self.trimStart(whitelist);
+        self.trimEnd(whitelist);
     }
 
     /// Copies this String into a new one
@@ -258,7 +258,7 @@ pub const String = struct {
         if (self.buffer) |buffer| {
             var i: usize = 0;
             while (i < self.size) {
-                const size = Utility.getUTF8Size(buffer[i]);
+                const size = String.getUTF8Size(buffer[i]);
                 if (size > 1) std.mem.reverse(u8, buffer[i..(i + size)]);
                 i += size;
             }
@@ -296,7 +296,7 @@ pub const String = struct {
             var start: usize = 0;
 
             while (i < self.size) {
-                const size = Utility.getUTF8Size(buffer[i]);
+                const size = String.getUTF8Size(buffer[i]);
                 if (size == delimiter.len) {
                     if (std.mem.eql(u8, delimiter, buffer[i..(i + size)])) {
                         if (block == index) return buffer[start..i];
@@ -325,7 +325,7 @@ pub const String = struct {
         if (self.buffer) |buffer| {
             var i: usize = 0;
             while (i < self.size) {
-                const size = Utility.getUTF8Size(buffer[i]);
+                const size = String.getUTF8Size(buffer[i]);
                 if (size == 1) buffer[i] = std.ascii.toLower(buffer[i]);
                 i += size;
             }
@@ -337,7 +337,7 @@ pub const String = struct {
         if (self.buffer) |buffer| {
             var i: usize = 0;
             while (i < self.size) {
-                const size = Utility.getUTF8Size(buffer[i]);
+                const size = String.getUTF8Size(buffer[i]);
                 if (size == 1) buffer[i] = std.ascii.toUpper(buffer[i]);
                 i += size;
             }
@@ -350,8 +350,8 @@ pub const String = struct {
         var result = String.init(self.allocator);
 
         if (self.buffer) |buffer| {
-            if (Utility.getIndex(buffer, start, true)) |rStart| {
-                if (Utility.getIndex(buffer, end, true)) |rEnd| {
+            if (String.getIndex(buffer, start, true)) |rStart| {
+                if (String.getIndex(buffer, end, true)) |rEnd| {
                     if (rEnd < rStart or rEnd > self.size)
                         return Error.InvalidRange;
                     try result.concat(buffer[rStart..rEnd]);
@@ -386,7 +386,7 @@ pub const String = struct {
                 if (it.string.buffer) |buffer| {
                     if (it.index == it.string.size) return null;
                     var i = it.index;
-                    it.index += Utility.getUTF8Size(buffer[i]);
+                    it.index += String.getUTF8Size(buffer[i]);
                     return buffer[i..it.index];
                 } else {
                     return null;
@@ -401,22 +401,24 @@ pub const String = struct {
             };
         }
     };
-};
 
-/// Contains UTF-8 utility functions
-pub const Utility = struct {
-    /// Returns whether a character is whitespace
-    pub inline fn isWhitespace(ch: u8) bool {
-        return ch == ' ' or ch == '\n' or ch == '\t' or ch == '\r';
+    /// Returns whether or not a character is whitelisted
+    fn inWhitelist(char: u8, whitelist: []const u8) bool {
+        var i: usize = 0;
+        while (i < whitelist.len) : (i += 1) {
+            if (whitelist[i] == char) return true;
+        }
+
+        return false;
     }
 
     /// Checks if byte is part of UTF-8 character
-    pub inline fn isUTF8Byte(byte: u8) bool {
+    inline fn isUTF8Byte(byte: u8) bool {
         return ((byte & 0x80) > 0) and (((byte << 1) & 0x80) == 0);
     }
 
     /// Returns the real index of a unicode string literal
-    pub fn getIndex(unicode: []const u8, index: usize, real: bool) ?usize {
+    fn getIndex(unicode: []const u8, index: usize, real: bool) ?usize {
         var i: usize = 0;
         var j: usize = 0;
         while (i < unicode.len) {
@@ -425,7 +427,7 @@ pub const Utility = struct {
             } else {
                 if (i == index) return j;
             }
-            i += Utility.getUTF8Size(unicode[i]);
+            i += String.getUTF8Size(unicode[i]);
             j += 1;
         }
 
@@ -433,7 +435,7 @@ pub const Utility = struct {
     }
 
     /// Returns the UTF-8 character's size
-    pub inline fn getUTF8Size(char: u8) u3 {
+    inline fn getUTF8Size(char: u8) u3 {
         return std.unicode.utf8ByteSequenceLength(char) catch |err| {
             return 1;
         };

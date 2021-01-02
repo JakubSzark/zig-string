@@ -5,28 +5,6 @@ const eql = std.mem.eql;
 
 const zig_string = @import("./zig-string.zig");
 const String = zig_string.String;
-const Utility = zig_string.Utility;
-
-test "Utility Tests" {
-    // getUTF8Size
-    assert(Utility.getUTF8Size("A"[0]) == 1);
-    assert(Utility.getUTF8Size("\u{5360}"[0]) == 3);
-    assert(Utility.getUTF8Size("💯"[0]) == 4);
-
-    // getRealIndex
-    const myliteral = "🔥Hello\u{5360}🔥";
-    assert(Utility.getIndex(myliteral, 6, true).? == 9);
-
-    // isWhitespace
-    assert(Utility.isWhitespace('\n'));
-
-    // isUTF8Byte
-    assert(Utility.isUTF8Byte("💯"[3]));
-    assert(Utility.isUTF8Byte("\u{5360}"[2]));
-    assert(Utility.isUTF8Byte("🔥"[1]));
-    assert(!Utility.isUTF8Byte("🔥"[0]));
-    assert(!Utility.isUTF8Byte("A"[0]));
-}
 
 test "Basic Usage" {
     // Use your favorite allocator
@@ -106,14 +84,16 @@ test "String Tests" {
     try myStr.remove(myStr.len() - 1);
     assert(myStr.cmp("💯Hel"));
 
+    const whitelist = [_]u8 {' ', '\t', '\n', '\r'};
+
     // trimStart
     try myStr.insert("      ", 0);
-    myStr.trimStart();
+    myStr.trimStart(whitelist[0..]);
     assert(myStr.cmp("💯Hel"));
 
     // trimEnd
     _ = try myStr.concat("lo💯\n      ");
-    myStr.trimEnd();
+    myStr.trimEnd(whitelist[0..]);
     assert(myStr.cmp("💯Hello💯"));
 
     // clone
