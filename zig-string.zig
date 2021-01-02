@@ -183,18 +183,12 @@ pub const String = struct {
     /// Finds the first occurrence of the string literal
     pub fn find(self: String, literal: []const u8) ?usize {
         if (self.buffer) |buffer| {
-            var i: usize = 0;
-            var j: usize = 0;
-            while (i < self.size) : (i += 1) {
-                if (buffer[i] == literal[j]) {
-                    if (j >= literal.len - 1)
-                        return Utility.getIndex(buffer, i - j, false);
-                    j += 1;
-                } else {
-                    j = 0;
-                }
+            const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
+            if (index) |i| {
+                return Utility.getIndex(buffer, i, false);
             }
         }
+
         return null;
     }
 
@@ -344,9 +338,7 @@ pub const String = struct {
         if (self.buffer) |buffer| {
             var i: usize = 0;
             while (i < self.size) : (i += 1) {
-                if (buffer[i] >= 65 and buffer[i] <= 90) {
-                    buffer[i] += 32;
-                }
+                buffer[i] = std.ascii.toLower(buffer[i]);
             }
         }
     }
@@ -356,9 +348,7 @@ pub const String = struct {
         if (self.buffer) |buffer| {
             var i: usize = 0;
             while (i < self.size) : (i += 1) {
-                if (buffer[i] >= 97 and buffer[i] <= 122) {
-                    buffer[i] -= 32;
-                }
+                buffer[i] = std.ascii.toUpper(buffer[i]);
             }
         }
     }
@@ -453,14 +443,8 @@ pub const Utility = struct {
 
     /// Returns the UTF-8 character's size
     pub inline fn getUTF8Size(char: u8) u3 {
-        if (char & 0x80 == 0) {
+        return std.unicode.utf8ByteSequenceLength(char) catch |err| {
             return 1;
-        } else if ((char << 2) & 0x80 == 0) {
-            return 2;
-        } else if ((char << 3) & 0x80 == 0) {
-            return 3;
-        } else {
-            return 4;
-        }
+        };
     }
 };
