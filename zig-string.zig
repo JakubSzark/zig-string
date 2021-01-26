@@ -289,7 +289,7 @@ pub const String = struct {
     }
 
     /// Splits the String into a slice, based on a delimiter and an index
-    pub fn split(self: String, delimiter: []const u8, index: usize) ?[]const u8 {
+    pub fn split(self: *const String, delimiters: []const u8, index: usize) ?[]const u8 {
         if (self.buffer) |buffer| {
             var i: usize = 0;
             var block: usize = 0;
@@ -297,8 +297,8 @@ pub const String = struct {
 
             while (i < self.size) {
                 const size = String.getUTF8Size(buffer[i]);
-                if (size == delimiter.len) {
-                    if (std.mem.eql(u8, delimiter, buffer[i..(i + size)])) {
+                if (size == delimiters.len) {
+                    if (std.mem.eql(u8, delimiters, buffer[i..(i + size)])) {
                         if (block == index) return buffer[start..i];
                         start = i + size;
                         block += 1;
@@ -311,6 +311,18 @@ pub const String = struct {
             if (i >= self.size - 1 and block == index) {
                 return buffer[start..self.size];
             }
+        }
+
+        return null;
+    }
+
+    /// Splits the String into a new string, based on delimiters and an index
+    /// The user of this function is in charge of the memory of the new String.
+    pub fn splitToString(self: *const String, delimiters: []const u8, index: usize) Error!?String {
+        if (self.split(delimiters, index)) |block| {
+            var string = String.init(self.allocator);
+            try string.concat(block);
+            return string;
         }
 
         return null;

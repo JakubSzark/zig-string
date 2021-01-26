@@ -129,6 +129,13 @@ test "String Tests" {
     assert(eql(u8, splitStr.split("=", 0).?, "variable"));
     assert(eql(u8, splitStr.split("=", 1).?, "'value'"));
 
+    // splitToString
+    var newSplit = try splitStr.splitToString("=", 0);
+    assert(newSplit != null);
+    defer newSplit.?.deinit();
+
+    assert(eql(u8, newSplit.?.str(), "variable"));
+
     // toLowercase & toUppercase
     myStr.toUppercase();
     assert(myStr.cmp("💯HELLO💯💯HELLO💯💯HELLO💯"));
