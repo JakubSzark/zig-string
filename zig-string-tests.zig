@@ -119,8 +119,17 @@ test "String Tests" {
     assert(eql(u8, myStr.split("💯", 1).?, "Hello"));
     assert(eql(u8, myStr.split("💯", 2).?, ""));
     assert(eql(u8, myStr.split("💯", 3).?, "Hello"));
+    assert(eql(u8, myStr.split("💯", 5).?, "Hello"));
+    assert(eql(u8, myStr.split("💯", 6).?, ""));
 
-    // toLowercasr & toUppercase
+    var splitStr = String.init(&arena.allocator);
+    defer splitStr.deinit();
+
+    try splitStr.concat("variable='value'");
+    assert(eql(u8, splitStr.split("=", 0).?, "variable"));
+    assert(eql(u8, splitStr.split("=", 1).?, "'value'"));
+
+    // toLowercase & toUppercase
     myStr.toUppercase();
     assert(myStr.cmp("💯HELLO💯💯HELLO💯💯HELLO💯"));
     myStr.toLowercase();

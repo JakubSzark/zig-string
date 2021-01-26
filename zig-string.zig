@@ -288,7 +288,7 @@ pub const String = struct {
         return self.size == 0;
     }
 
-    /// Splits the String into a slice based on a delimiter and an index
+    /// Splits the String into a slice, based on a delimiter and an index
     pub fn split(self: String, delimiter: []const u8, index: usize) ?[]const u8 {
         if (self.buffer) |buffer| {
             var i: usize = 0;
@@ -306,6 +306,10 @@ pub const String = struct {
                 }
 
                 i += size;
+            }
+
+            if (i >= self.size - 1 and block == index) {
+                return buffer[start..self.size];
             }
         }
 
