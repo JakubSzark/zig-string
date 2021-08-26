@@ -139,7 +139,7 @@ pub const String = struct {
 
     /// Returns an owned slice of this string
     pub fn toOwned(self: String) Error!?[]u8 {
-        if (self.buffer) {
+        if (self.buffer != null) {
             const string = self.str();
             if (self.allocator.alloc(u8, string.len)) |newStr| {
                 std.mem.copy(u8, newStr, string);
