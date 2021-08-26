@@ -41,11 +41,11 @@ pub const String = struct {
     pub fn allocate(self: *String, bytes: usize) Error!void {
         if (self.buffer) |buffer| {
             if (bytes < self.size) self.size = bytes; // Clamp size to capacity
-            self.buffer = self.allocator.realloc(buffer, bytes) catch |err| {
+            self.buffer = self.allocator.realloc(buffer, bytes) catch |_| {
                 return Error.OutOfMemory;
             };
         } else {
-            self.buffer = self.allocator.alloc(u8, bytes) catch |err| {
+            self.buffer = self.allocator.alloc(u8, bytes) catch |_| {
                 return Error.OutOfMemory;
             };
         }
@@ -144,7 +144,7 @@ pub const String = struct {
             if (self.allocator.alloc(u8, string.len)) |newStr| {
                 std.mem.copy(u8, newStr, string);
                 return newStr;
-            } else |err| {
+            } else |_| {
                 return Error.OutOfMemory;
             }
         }
@@ -227,7 +227,7 @@ pub const String = struct {
             }
 
             if (String.getIndex(buffer, i, false)) |k| {
-                self.removeRange(0, k) catch |err| {};
+                self.removeRange(0, k) catch |_| {};
             }
         }
     }
@@ -452,7 +452,7 @@ pub const String = struct {
 
     /// Returns the UTF-8 character's size
     inline fn getUTF8Size(char: u8) u3 {
-        return std.unicode.utf8ByteSequenceLength(char) catch |err| {
+        return std.unicode.utf8ByteSequenceLength(char) catch |_| {
             return 1;
         };
     }
