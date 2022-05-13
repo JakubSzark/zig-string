@@ -2,8 +2,9 @@
 
 # Zig String (A UTF-8 String Library)
 
+This library is a UTF-8 compatible **string** library for the **Zig** programming language. 
 I made this for the sole purpose to further my experience and understanding of zig.
-Also it may be useful for some people who need it (including myself), with future projects.
+Also it may be useful for some people who need it (including myself), with future projects. Project is also open for people to add to and improve. Please check the **issues** to view requested features.
 
 # Basic Usage
 ```zig
