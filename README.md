@@ -1,3 +1,5 @@
+[![CI](https://github.com/JakubSzark/zig-string/actions/workflows/main.yml/badge.svg)](https://github.com/JakubSzark/zig-string/actions/workflows/main.yml)
+
 # Zig String (A UTF-8 String Library)
 
 I made this for the sole purpose to further my experience and understanding of zig.
