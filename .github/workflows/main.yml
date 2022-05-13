@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install snap
+        run: sudo apt install snap -y
+        
+      - name: Install latest zig version
+        run: snap install zig --classic --beta
+        
+      - name: Test
+        run: zig build test
