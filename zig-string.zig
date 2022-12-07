@@ -6,7 +6,7 @@ pub const String = struct {
     /// The internal character buffer
     buffer: ?[]u8,
     /// The allocator used for managing the buffer
-    allocator: *std.mem.Allocator,
+    allocator: std.mem.Allocator,
     /// The total size of the String
     size: usize,
 
@@ -18,7 +18,7 @@ pub const String = struct {
 
     /// Creates a String with an Allocator
     /// User is responsible for managing the new String
-    pub fn init(allocator: *std.mem.Allocator) String {
+    pub fn init(allocator: std.mem.Allocator) String {
         return .{
             .buffer = null,
             .allocator = allocator,
