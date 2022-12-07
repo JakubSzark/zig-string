@@ -12,7 +12,7 @@ test "Basic Usage" {
     defer arena.deinit();
 
     // Create your String
-    var myString = String.init(&arena.allocator());
+    var myString = String.init(arena.allocator());
     defer myString.deinit();
 
     // Use functions provided
@@ -31,7 +31,7 @@ test "String Tests" {
     defer arena.deinit();
 
     // This is how we create the String
-    var myStr = String.init(&arena.allocator());
+    var myStr = String.init(arena.allocator());
     defer myStr.deinit();
 
     // allocate & capacity
@@ -122,7 +122,7 @@ test "String Tests" {
     assert(eql(u8, myStr.split("💯", 5).?, "Hello"));
     assert(eql(u8, myStr.split("💯", 6).?, ""));
 
-    var splitStr = String.init(&arena.allocator());
+    var splitStr = String.init(arena.allocator());
     defer splitStr.deinit();
 
     try splitStr.concat("variable='value'");
