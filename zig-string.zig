@@ -395,7 +395,7 @@ pub const String = struct {
     // Iterator support
     pub usingnamespace struct {
         pub const StringIterator = struct {
-            string: *String,
+            string: *const String,
             index: usize,
 
             pub fn next(it: *StringIterator) ?[]const u8 {
@@ -410,7 +410,7 @@ pub const String = struct {
             }
         };
 
-        pub fn iterator(self: *String) StringIterator {
+        pub fn iterator(self: *const String) StringIterator {
             return StringIterator{
                 .string = self,
                 .index = 0,
