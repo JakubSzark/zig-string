@@ -26,6 +26,14 @@ pub const String = struct {
         };
     }
 
+    pub fn init_with_contents(allocator: std.mem.Allocator, contents: []const u8) Error!String {
+        var string = init(allocator);
+
+        try string.concat(contents);
+
+        return string;
+    }
+
     /// Deallocates the internal buffer
     pub fn deinit(self: *String) void {
         if (self.buffer) |buffer| self.allocator.free(buffer);

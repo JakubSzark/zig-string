@@ -174,3 +174,16 @@ test "String Tests" {
 
     assert(i == myStr.len());
 }
+
+test "init with contents" {
+    // Allocator for the String
+    const page_allocator = std.heap.page_allocator;
+    var arena = std.heap.ArenaAllocator.init(page_allocator);
+    defer arena.deinit();
+
+    var initial_contents = "String with initial contents!";
+
+    // This is how we create the String with contents at the start
+    var myStr = try String.init_with_contents(arena.allocator(), initial_contents);
+    assert(eql(u8, myStr.str(), initial_contents));
+}
