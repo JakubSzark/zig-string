@@ -50,6 +50,7 @@ If there are any issues with <b>complexity</b> please <b>open an issue</b>
 Function      | Description                              | Complexity (Best)
 --------------|------------------------------------------|-----------
 init          | Creates a String with an Allocator       | O(1)
+init_with_contents| Creates a String with specified contents | O(1)
 deinit        | De-allocates the String                  | O(1)
 len           | Returns count of characters stored       | O(n)
 clear         | Clears the contents of the String        | O(n)
