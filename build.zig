@@ -1,13 +1,21 @@
 const Builder = @import("std").build.Builder;
+const FileSource = @import("std").build.FileSource;
 
 pub fn build(b: *Builder) void {
-    const mode = b.standardReleaseOptions();
-    const lib = b.addStaticLibrary("zig-string", "zig-string.zig");
-    lib.setBuildMode(mode);
-    lib.install();
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
 
-    var main_tests = b.addTest("zig-string-tests.zig");
-    main_tests.setBuildMode(mode);
+    const lib = b.addStaticLibrary(.{ .name = "zig-string", .root_source_file = FileSource.relative("zig-string.zig"), .target = target, .optimize = optimize });
+
+    b.installArtifact(lib);
+
+    _ = b.addModule("string", .{ .source_file = FileSource.relative("zig-string.zig") });
+
+    var main_tests = b.addTest(.{
+        .root_source_file = FileSource.relative("zig-string-tests.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
 
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&main_tests.step);
