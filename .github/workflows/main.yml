@@ -17,8 +17,8 @@ jobs:
       - name: Install snap
         run: sudo apt install snap -y
         
-      - name: Install latest zig version
-        run: sudo snap install zig --classic --beta
+      - name: Install latest zig build from master branch
+        run: sudo snap install zig --classic --edge
         
       - name: Test
         run: zig build test
