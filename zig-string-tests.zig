@@ -142,6 +142,13 @@ test "String Tests" {
     myStr.toLowercase();
     assert(myStr.cmp("💯hello💯💯hello💯💯hello💯"));
 
+    // uniToLower & toUppercase
+    try myStr.concat("💯ĥęłłœ💯💯ĥęłłœ💯💯ĥęłłœ💯");
+    try myStr.uniToUppercase();
+    assert(myStr.cmp("💯HELLO💯💯HELLO💯💯HELLO💯💯ĤĘŁŁŒ💯💯ĤĘŁŁŒ💯💯ĤĘŁŁŒ💯"));
+    try myStr.uniToLowercase();
+    assert(myStr.cmp("💯hello💯💯hello💯💯hello💯💯ĥęłłœ💯💯ĥęłłœ💯💯ĥęłłœ💯"));
+
     // substr
     var subStr = try myStr.substr(0, 7);
     defer subStr.deinit();
