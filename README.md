@@ -80,4 +80,5 @@ clone         | Copies this string to a new one
 truncate      | Realloc to the length                    
 isEmpty       | Checks if length is zero                 
 repeat        | Repeats string n times                  
-charAt        | Returns character at index               
+charAt        | Returns character at index 
+set_str       | Set's buffer value from string literal              
