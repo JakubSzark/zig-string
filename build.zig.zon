@@ -1,0 +1,6 @@
+.{
+      .name = "zig-string",
+      .version = "0.9.0",
+      .paths = .{""},
+}
+ 
