@@ -464,4 +464,12 @@ pub const String = struct {
             return 1;
         };
     }
+
+    pub fn starts_with(self: String, literal: []const u8) bool {
+        if (self.buffer) |buffer| {
+            const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
+            return index == 0;
+        }
+        return false;
+    }
 };
