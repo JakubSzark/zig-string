@@ -16,7 +16,7 @@ var arena = ArenaAllocator.init(std.heap.page_allocator);
 defer arena.deinit();
 
 // Create your String
-var myString = String.init(&arena.allocator());
+var myString = String.init(arena.allocator());
 defer myString.deinit();
 
 // Use functions provided
