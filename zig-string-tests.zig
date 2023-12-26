@@ -3,7 +3,7 @@ const ArenaAllocator = std.heap.ArenaAllocator;
 const assert = std.debug.assert;
 const eql = std.mem.eql;
 
-const zig_string = @import("./zig-string.zig");
+const zig_string = @import("./string.zig");
 const String = zig_string.String;
 
 test "Basic Usage" {
@@ -186,4 +186,16 @@ test "init with contents" {
     // This is how we create the String with contents at the start
     var myStr = try String.init_with_contents(arena.allocator(), initial_contents);
     assert(eql(u8, myStr.str(), initial_contents));
+}
+
+test "strt_with" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    var myString = String.init(arena.allocator());
+    defer myString.deinit();
+
+    try myString.concat("bananas");
+    assert(myString.starts_with("bana"));
+    assert(!myString.starts_with("abc"));
 }
