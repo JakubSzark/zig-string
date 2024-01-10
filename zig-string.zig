@@ -409,7 +409,7 @@ pub const String = struct {
             pub fn next(it: *StringIterator) ?[]const u8 {
                 if (it.string.buffer) |buffer| {
                     if (it.index == it.string.size) return null;
-                    var i = it.index;
+                    const i = it.index;
                     it.index += String.getUTF8Size(buffer[i]);
                     return buffer[i..it.index];
                 } else {
