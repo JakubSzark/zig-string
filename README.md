@@ -29,6 +29,37 @@ assert(myString.cmp("🔥 Hello, World 🔥"));
 
 ```
 
+# Installation
+Add this to your build.zig.zon
+
+```zig
+.dependencies = .{
+    .string = .{
+        .url = "https://github.com/JakubSzark/zig-string/archive/refs/heads/master.tar.gz",
+        //the correct hash will be suggested by zig
+    }
+}
+
+```
+
+And add this to you build.zig.zon
+
+```zig
+    const string = b.dependency("string", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    exe.addModule("string", string.module("string"));
+
+```
+
+You can then import the library into your code like this
+
+```zig
+const String = @import("string").String;
+```
+
+
 # Things needed
 - Optimizations
 - Multi-Language toUppercase & toLowercase
@@ -49,35 +80,35 @@ If there are any issues with <b>complexity</b> please <b>open an issue</b>
 
 Function      | Description                              
 --------------|------------------------------------------
-init          | Creates a String with an Allocator       
-init_with_contents| Creates a String with specified contents 
-deinit        | De-allocates the String                  
-len           | Returns count of characters stored       
-clear         | Clears the contents of the String        
 allocate      | Sets the internal buffer size            
 capacity      | Returns the capacity of the String       
-str           | Returns the String as a slice           
-concat        | Appends a string literal to the end      
+charAt        | Returns character at index               
+clear         | Clears the contents of the String        
+clone         | Copies this string to a new one         
 cmp           | Compares to string literal              
-pop           | Removes the last character              
-substr        | Creates a string from a range          
-toOwned       | Creates an owned slice of the String     
-writer        | Returns a std.io.Writer for the String   
+concat        | Appends a string literal to the end      
+deinit        | De-allocates the String                  
+find          | Finds first string literal appearance    
+init          | Creates a String with an Allocator       
+init_with_contents| Creates a String with specified contents 
+insert        | Inserts a character at an index          
+isEmpty       | Checks if length is zero                 
 iterator      | Returns a StringIterator over the String 
+len           | Returns count of characters stored       
+pop           | Removes the last character              
 remove        | Removes a character at an index          
 removeRange   | Removes a range of characters            
-trimStart     | Remove whitelist from the start          
-trimEnd       | Remove whitelist from the end            
-trim          | Removes whitelist from both ends         
-toLowercase   | Converts (ASCII) characters to lowercase 
-toUppercase   | Converts (ASCII) characters to uppercase 
-find          | Finds first string literal appearance    
+repeat        | Repeats string n times                  
+reverse       | Reverses all the characters              
 split         | Returns a slice based on delimiters      
 splitToString | Returns a String based on delimiters     
-insert        | Inserts a character at an index          
-reverse       | Reverses all the characters              
-clone         | Copies this string to a new one         
+str           | Returns the String as a slice           
+substr        | Creates a string from a range          
+toLowercase   | Converts (ASCII) characters to lowercase 
+toOwned       | Creates an owned slice of the String     
+toUppercase   | Converts (ASCII) characters to uppercase 
+trim          | Removes whitelist from both ends         
+trimEnd       | Remove whitelist from the end            
+trimStart     | Remove whitelist from the start          
 truncate      | Realloc to the length                    
-isEmpty       | Checks if length is zero                 
-repeat        | Repeats string n times                  
-charAt        | Returns character at index               
+writer        | Returns a std.io.Writer for the String 
