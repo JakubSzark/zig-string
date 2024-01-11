@@ -5,10 +5,6 @@ pub fn build(b: *Builder) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const lib = b.addStaticLibrary(.{ .name = "zig-string", .root_source_file = FileSource.relative("zig-string.zig"), .target = target, .optimize = optimize });
-
-    b.installArtifact(lib);
-
     _ = b.addModule("string", .{ .source_file = FileSource.relative("zig-string.zig") });
 
     var main_tests = b.addTest(.{
