@@ -188,7 +188,7 @@ test "init with contents" {
     assert(eql(u8, myStr.str(), initial_contents));
 }
 
-test "strt_with" {
+test "starts_with" {
     var arena = ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
@@ -198,4 +198,21 @@ test "strt_with" {
     try myString.concat("bananas");
     assert(myString.starts_with("bana"));
     assert(!myString.starts_with("abc"));
+}
+
+test "ends_with" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    var myString = String.init(arena.allocator());
+    defer myString.deinit();
+
+    try myString.concat("asbananas");
+    assert(myString.ends_with("nas"));
+    assert(!myString.ends_with("abc"));
+
+    try myString.truncate();
+    try myString.concat("💯hello💯💯hello💯💯hello💯");
+    std.debug.print("", .{});
+    assert(myString.ends_with("hello💯"));
 }

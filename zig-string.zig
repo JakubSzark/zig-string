@@ -472,4 +472,13 @@ pub const String = struct {
         }
         return false;
     }
+
+    pub fn ends_with(self: String, literal: []const u8) bool {
+        if (self.buffer) |buffer| {
+            const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
+            var i: usize = self.size - literal.len;
+            return index == i;
+        }
+        return false;
+    }
 };
