@@ -216,3 +216,25 @@ test "ends_with" {
     std.debug.print("", .{});
     assert(myString.ends_with("hello💯"));
 }
+
+test "replace" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    // Create your String
+    var myString = String.init(arena.allocator());
+    defer myString.deinit();
+
+    try myString.concat("hi,how are you");
+    var result = try myString.replace("hi,", "");
+    assert(result);
+    assert(eql(u8, myString.str(), "how are you"));
+
+    result = try myString.replace("abc", " ");
+    assert(!result);
+
+    // try myString.truncate();
+    // try myString.concat("💯hello💯💯hello💯💯hello💯");
+    // _ = try myString.replace("hello", "hi");
+    // assert(eql(u8, myString.str(), "💯hi💯💯hi💯💯hi💯"));
+}

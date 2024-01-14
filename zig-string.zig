@@ -465,7 +465,7 @@ pub const String = struct {
         };
     }
 
-    pub fn starts_with(self: String, literal: []const u8) bool {
+    pub fn starts_with(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
             const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
             return index == 0;
@@ -473,11 +473,27 @@ pub const String = struct {
         return false;
     }
 
-    pub fn ends_with(self: String, literal: []const u8) bool {
+    pub fn ends_with(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
             const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
             var i: usize = self.size - literal.len;
             return index == i;
+        }
+        return false;
+    }
+
+    pub fn replace(self: *String, needle: []const u8, replacement: []const u8) !bool {
+        if (self.buffer) |buffer| {
+            const InputSize = self.size;
+            const size = std.mem.replacementSize(u8, buffer[0..InputSize], needle, replacement);
+            self.buffer = self.allocator.alloc(u8, size) catch {
+                return Error.OutOfMemory;
+            };
+            self.size = size;
+            const changes = std.mem.replace(u8, buffer[0..InputSize], needle, replacement, self.buffer.?);
+            if (changes > 0) {
+                return true;
+            }
         }
         return false;
     }
