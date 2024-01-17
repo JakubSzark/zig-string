@@ -150,7 +150,7 @@ pub const String = struct {
         if (self.buffer != null) {
             const string = self.str();
             if (self.allocator.alloc(u8, string.len)) |newStr| {
-                std.mem.copy(u8, newStr, string);
+                std.mem.copyForwards(u8, newStr, string);
                 return newStr;
             } else |_| {
                 return Error.OutOfMemory;
