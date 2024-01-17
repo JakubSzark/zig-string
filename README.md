@@ -111,4 +111,8 @@ trim          | Removes whitelist from both ends
 trimEnd       | Remove whitelist from the end            
 trimStart     | Remove whitelist from the start          
 truncate      | Realloc to the length                    
+isEmpty       | Checks if length is zero                 
+repeat        | Repeats string n times                  
+charAt        | Returns character at index 
+set_str       | Set's buffer value from string literal              
 writer        | Returns a std.io.Writer for the String 

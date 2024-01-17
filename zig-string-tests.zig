@@ -173,6 +173,14 @@ test "String Tests" {
     }
 
     assert(i == myStr.len());
+
+    // set_str
+    const contents = "set_str Test!";
+    try myStr.set_str(contents);
+    assert(myStr.cmp(contents));
+
+    // non ascii supports in windows
+    assert(std.os.windows.kernel32.GetConsoleOutputCP() == 65001);
 }
 
 test "init with contents" {
