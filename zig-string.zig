@@ -150,7 +150,7 @@ pub const String = struct {
         if (self.buffer != null) {
             const string = self.str();
             if (self.allocator.alloc(u8, string.len)) |newStr| {
-                std.mem.copy(u8, newStr, string);
+                std.mem.copyForwards(u8, newStr, string);
                 return newStr;
             } else |_| {
                 return Error.OutOfMemory;
@@ -463,5 +463,38 @@ pub const String = struct {
         return std.unicode.utf8ByteSequenceLength(char) catch {
             return 1;
         };
+    }
+
+    pub fn starts_with(self: *String, literal: []const u8) bool {
+        if (self.buffer) |buffer| {
+            const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
+            return index == 0;
+        }
+        return false;
+    }
+
+    pub fn ends_with(self: *String, literal: []const u8) bool {
+        if (self.buffer) |buffer| {
+            const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
+            var i: usize = self.size - literal.len;
+            return index == i;
+        }
+        return false;
+    }
+
+    pub fn replace(self: *String, needle: []const u8, replacement: []const u8) !bool {
+        if (self.buffer) |buffer| {
+            const InputSize = self.size;
+            const size = std.mem.replacementSize(u8, buffer[0..InputSize], needle, replacement);
+            self.buffer = self.allocator.alloc(u8, size) catch {
+                return Error.OutOfMemory;
+            };
+            self.size = size;
+            const changes = std.mem.replace(u8, buffer[0..InputSize], needle, replacement, self.buffer.?);
+            if (changes > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 };
