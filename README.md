@@ -112,3 +112,6 @@ trimEnd       | Remove whitelist from the end
 trimStart     | Remove whitelist from the start          
 truncate      | Realloc to the length                    
 writer        | Returns a std.io.Writer for the String 
+starts_with   | Determines if the given string begins with the given value
+ends_with     | Determines if the given string ends with the given value
+replace       | Replace all occurrences of the search string with the replacement string
