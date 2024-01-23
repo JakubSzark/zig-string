@@ -188,7 +188,7 @@ test "init with contents" {
     assert(eql(u8, myStr.str(), initial_contents));
 }
 
-test "starts_with" {
+test "starts_with Tests" {
     var arena = ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
@@ -200,7 +200,7 @@ test "starts_with" {
     assert(!myString.starts_with("abc"));
 }
 
-test "ends_with" {
+test "ends_with Tests" {
     var arena = ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
@@ -217,7 +217,7 @@ test "ends_with" {
     assert(myString.ends_with("hello💯"));
 }
 
-test "replace" {
+test "replace Tests" {
     var arena = ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
@@ -233,8 +233,18 @@ test "replace" {
     result = try myString.replace("abc", " ");
     assert(!result);
 
-    // try myString.truncate();
-    // try myString.concat("💯hello💯💯hello💯💯hello💯");
-    // _ = try myString.replace("hello", "hi");
-    // assert(eql(u8, myString.str(), "💯hi💯💯hi💯💯hi💯"));
+    myString.clear();
+    try myString.concat("💯hello💯💯hello💯💯hello💯");
+    _ = try myString.replace("hello", "hi");
+    assert(eql(u8, myString.str(), "💯hi💯💯hi💯💯hi💯"));
+}
+
+test "rfind Tests" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    var myString = try String.init_with_contents(arena.allocator(), "💯hi💯💯hi💯💯hi💯");
+    defer myString.deinit();
+
+    assert(myString.rfind("hi") == 9);
 }

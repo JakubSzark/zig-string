@@ -89,6 +89,7 @@ cmp           | Compares to string literal
 concat        | Appends a string literal to the end      
 deinit        | De-allocates the String                  
 find          | Finds first string literal appearance    
+rfind         | Finds last string literal appearance    
 init          | Creates a String with an Allocator       
 init_with_contents| Creates a String with specified contents 
 insert        | Inserts a character at an index          
