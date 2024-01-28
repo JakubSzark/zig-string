@@ -200,6 +200,18 @@ pub const String = struct {
         return null;
     }
 
+    /// Finds the last occurrence of the string literal
+    pub fn rfind(self: String, literal: []const u8) ?usize {
+        if (self.buffer) |buffer| {
+            const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
+            if (index) |i| {
+                return String.getIndex(buffer, i, false);
+            }
+        }
+
+        return null;
+    }
+
     /// Removes a character at the specified index
     pub fn remove(self: *String, index: usize) Error!void {
         try self.removeRange(index, index + 1);
