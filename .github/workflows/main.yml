@@ -18,7 +18,7 @@ jobs:
         run: wget https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz
 
       - name: Extract 
-        run: tar –tzf zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz –C zig-0.12.0
+        run: tar –xf zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz –C zig-0.12.0
 
       - name: Alias
         run: alias zig='$PWD/zig-0.12.0/zig'
