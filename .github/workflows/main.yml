@@ -21,7 +21,7 @@ jobs:
         run: tar -xf zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz && cd zig-macos-x86_64-0.12.0-dev.2341+92211135f
 
       - name: Alias
-        run: alias zig='$PWD/zig-macos-x86_64-0.12.0-dev.2341+92211135f/zig'
+        run: alias zig='./zig'
 
       - name: Version
         run: zig version
