@@ -20,7 +20,7 @@ jobs:
       - name: Extract 
         run: tar -xf zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz  
       
-      -name: CD 
+      - name: CD 
        run: cd zig-macos-x86_64-0.12.0-dev.2341+92211135f
 
       - name: Alias
