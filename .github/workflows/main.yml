@@ -21,7 +21,10 @@ jobs:
         run: tar -xf zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz  
 
       - name: Alias
-        run: alias zig='/home/runner/work/zig-string/zig-string/zig-linux-x86_64-0.12.0-dev.2540+776cd673f/zig'
+        run: alias zig=$PWD/zig-linux-x86_64-0.12.0-dev.2540+776cd673f/zig
+
+      - name: PWD
+        run: echo $PWD;
 
       - name: Version
         run: zig version
