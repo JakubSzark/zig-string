@@ -181,7 +181,7 @@ test "init with contents" {
     var arena = std.heap.ArenaAllocator.init(page_allocator);
     defer arena.deinit();
 
-    var initial_contents = "String with initial contents!";
+    const initial_contents = "String with initial contents!";
 
     // This is how we create the String with contents at the start
     var myStr = try String.init_with_contents(arena.allocator(), initial_contents);
