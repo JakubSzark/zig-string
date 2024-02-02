@@ -421,7 +421,7 @@ pub const String = struct {
             pub fn next(it: *StringIterator) ?[]const u8 {
                 if (it.string.buffer) |buffer| {
                     if (it.index == it.string.size) return null;
-                    var i = it.index;
+                    const i = it.index;
                     it.index += String.getUTF8Size(buffer[i]);
                     return buffer[i..it.index];
                 } else {
@@ -488,7 +488,7 @@ pub const String = struct {
     pub fn ends_with(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
             const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
-            var i: usize = self.size - literal.len;
+            const i: usize = self.size - literal.len;
             return index == i;
         }
         return false;
