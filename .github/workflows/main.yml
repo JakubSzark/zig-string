@@ -17,8 +17,17 @@ jobs:
       - name: Install snap
         run: sudo apt install snap -y
         
-      - name: Install latest zig build from master branch
-        run: sudo snap install zig --beta --classic
+      - name: Download zig
+        run: wegt https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz
+
+      - name: Extract 
+        run: tar –xvzf zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz zig-0.12.0
+
+      - name: Alias
+        run: alias zig='$PWD/zig-0.12.0/zig'
+
+      - name: Version
+        run: zig version
         
       - name: Test
         run: zig build test
