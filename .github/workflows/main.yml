@@ -27,4 +27,4 @@ jobs:
         run: $PWD/zig-linux-x86_64-0.12.0-dev.3508+a6ed3e6d2/zig version
         
       - name: Test
-        run: $PWD/zig-linux-x86_64-0.12.0-dev.3508+a6ed3e6d2/zig build test
+        run: $PWD/zig-linux-x86_64-0.12.0-dev.3508+a6ed3e6d2/zig test zig-string-tests.zig 
