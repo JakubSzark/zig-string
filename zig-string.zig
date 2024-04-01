@@ -1,5 +1,6 @@
 const std = @import("std");
 const assert = std.debug.assert;
+const builtin = @import("builtin");
 
 /// A variable length collection of characters
 pub const String = struct {
@@ -17,8 +18,20 @@ pub const String = struct {
     };
 
     /// Creates a String with an Allocator
+    /// ### example
+    /// ```ts
+    /// var str = String.init(allocator);
+    /// // don't forgot to deallocate
+    /// defer _ = str.deinit();
+    /// ```
     /// User is responsible for managing the new String
     pub fn init(allocator: std.mem.Allocator) String {
+        // for windows non-ascii characters
+        // check if the system is windows
+        if (builtin.os.tag == std.Target.Os.Tag.windows) {
+            _ = std.os.windows.kernel32.SetConsoleOutputCP(65001);
+        }
+
         return .{
             .buffer = null,
             .allocator = allocator,
@@ -35,6 +48,12 @@ pub const String = struct {
     }
 
     /// Deallocates the internal buffer
+    /// ### usage:
+    /// ```zig
+    /// var str = String.init(allocator);
+    /// // deinit after the closure
+    /// defer _ = str.deinit();
+    /// ```
     pub fn deinit(self: *String) void {
         if (self.buffer) |buffer| self.allocator.free(buffer);
     }
@@ -139,7 +158,13 @@ pub const String = struct {
         return false;
     }
 
-    /// Returns the String as a string literal
+    /// Returns the String buffer as a string literal
+    /// ### usage:
+    ///```zig
+    ///var mystr = try String.init_with_contents(allocator, "Test String!");
+    ///defer _ = mystr.deinit();
+    ///std.debug.print("{s}\n", .{mystr.str()});
+    ///```
     pub fn str(self: String) []const u8 {
         if (self.buffer) |buffer| return buffer[0..self.size];
         return "";
@@ -476,6 +501,10 @@ pub const String = struct {
             return 1;
         };
     }
+
+    pub fn set_str(self: *String, contents: []const u8) Error!void {
+        self.clear();
+        try self.concat(contents);
 
     pub fn starts_with(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
