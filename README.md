@@ -1,6 +1,6 @@
-[![CI](https://github.com/JakubSzark/zig-string/actions/workflows/main.yml/badge.svg)](https://github.com/JakubSzark/zig-string/actions/workflows/main.yml)
-
 # Zig String (A UTF-8 String Library)
+
+[![CI](https://github.com/JakubSzark/zig-string/actions/workflows/main.yml/badge.svg)](https://github.com/JakubSzark/zig-string/actions/workflows/main.yml) ![Github Repo Issues](https://img.shields.io/github/issues/JakubSzark/zig-string?style=flat) ![GitHub Repo stars](https://img.shields.io/github/stars/JakubSzark/zig-string?style=social)
 
 This library is a UTF-8 compatible **string** library for the **Zig** programming language.
 I made this for the sole purpose to further my experience and understanding of zig.
@@ -60,13 +60,6 @@ You can then import the library into your code like this
 ```zig
 const String = @import("string").String;
 ```
-
-# Things needed
-
-- Optimizations
-- Multi-Language toUppercase & toLowercase
-- Better documentation
-- More Testing
 
 # How to Contribute
 
