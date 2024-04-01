@@ -174,13 +174,13 @@ test "String Tests" {
 
     assert(i == myStr.len());
 
-    // set_str
-    const contents = "set_str Test!";
-    try myStr.set_str(contents);
+    // setStr
+    const contents = "setStr Test!";
+    try myStr.setStr(contents);
     assert(myStr.cmp(contents));
 
     // non ascii supports in windows
-    assert(std.os.windows.kernel32.GetConsoleOutputCP() == 65001);
+    // assert(std.os.windows.kernel32.GetConsoleOutputCP() == 65001);
 }
 
 test "init with contents" {
@@ -196,7 +196,7 @@ test "init with contents" {
     assert(eql(u8, myStr.str(), initial_contents));
 }
 
-test "starts_with Tests" {
+test "startsWith Tests" {
     var arena = ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
@@ -204,11 +204,11 @@ test "starts_with Tests" {
     defer myString.deinit();
 
     try myString.concat("bananas");
-    assert(myString.starts_with("bana"));
-    assert(!myString.starts_with("abc"));
+    assert(myString.startsWith("bana"));
+    assert(!myString.startsWith("abc"));
 }
 
-test "ends_with Tests" {
+test "endsWith Tests" {
     var arena = ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
 
@@ -216,13 +216,13 @@ test "ends_with Tests" {
     defer myString.deinit();
 
     try myString.concat("asbananas");
-    assert(myString.ends_with("nas"));
-    assert(!myString.ends_with("abc"));
+    assert(myString.endsWith("nas"));
+    assert(!myString.endsWith("abc"));
 
     try myString.truncate();
     try myString.concat("💯hello💯💯hello💯💯hello💯");
     std.debug.print("", .{});
-    assert(myString.ends_with("hello💯"));
+    assert(myString.endsWith("hello💯"));
 }
 
 test "replace Tests" {

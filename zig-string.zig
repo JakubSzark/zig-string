@@ -502,11 +502,14 @@ pub const String = struct {
         };
     }
 
-    pub fn set_str(self: *String, contents: []const u8) Error!void {
+    /// Sets the contents of the String
+    pub fn setStr(self: *String, contents: []const u8) Error!void {
         self.clear();
         try self.concat(contents);
+    }
 
-    pub fn starts_with(self: *String, literal: []const u8) bool {
+    /// Checks the start of the string against a literal
+    pub fn startsWith(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
             const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
             return index == 0;
@@ -514,7 +517,8 @@ pub const String = struct {
         return false;
     }
 
-    pub fn ends_with(self: *String, literal: []const u8) bool {
+    /// Checks the end of the string against a literal
+    pub fn endsWith(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
             const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
             const i: usize = self.size - literal.len;
@@ -523,6 +527,7 @@ pub const String = struct {
         return false;
     }
 
+    /// Replaces all occurrences of a string literal with another
     pub fn replace(self: *String, needle: []const u8, replacement: []const u8) !bool {
         if (self.buffer) |buffer| {
             const InputSize = self.size;
