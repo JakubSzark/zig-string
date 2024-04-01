@@ -175,7 +175,7 @@ pub const String = struct {
         if (self.buffer != null) {
             const string = self.str();
             if (self.allocator.alloc(u8, string.len)) |newStr| {
-                std.mem.copy(u8, newStr, string);
+                std.mem.copyForwards(u8, newStr, string);
                 return newStr;
             } else |_| {
                 return Error.OutOfMemory;
@@ -217,6 +217,18 @@ pub const String = struct {
     pub fn find(self: String, literal: []const u8) ?usize {
         if (self.buffer) |buffer| {
             const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
+            if (index) |i| {
+                return String.getIndex(buffer, i, false);
+            }
+        }
+
+        return null;
+    }
+
+    /// Finds the last occurrence of the string literal
+    pub fn rfind(self: String, literal: []const u8) ?usize {
+        if (self.buffer) |buffer| {
+            const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
             if (index) |i| {
                 return String.getIndex(buffer, i, false);
             }
@@ -434,7 +446,7 @@ pub const String = struct {
             pub fn next(it: *StringIterator) ?[]const u8 {
                 if (it.string.buffer) |buffer| {
                     if (it.index == it.string.size) return null;
-                    var i = it.index;
+                    const i = it.index;
                     it.index += String.getUTF8Size(buffer[i]);
                     return buffer[i..it.index];
                 } else {
@@ -493,5 +505,37 @@ pub const String = struct {
     pub fn set_str(self: *String, contents: []const u8) Error!void {
         self.clear();
         try self.concat(contents);
+
+    pub fn starts_with(self: *String, literal: []const u8) bool {
+        if (self.buffer) |buffer| {
+            const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
+            return index == 0;
+        }
+        return false;
+    }
+
+    pub fn ends_with(self: *String, literal: []const u8) bool {
+        if (self.buffer) |buffer| {
+            const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
+            const i: usize = self.size - literal.len;
+            return index == i;
+        }
+        return false;
+    }
+
+    pub fn replace(self: *String, needle: []const u8, replacement: []const u8) !bool {
+        if (self.buffer) |buffer| {
+            const InputSize = self.size;
+            const size = std.mem.replacementSize(u8, buffer[0..InputSize], needle, replacement);
+            self.buffer = self.allocator.alloc(u8, size) catch {
+                return Error.OutOfMemory;
+            };
+            self.size = size;
+            const changes = std.mem.replace(u8, buffer[0..InputSize], needle, replacement, self.buffer.?);
+            if (changes > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 };

@@ -1,14 +1,13 @@
-const Builder = @import("std").build.Builder;
-const FileSource = @import("std").build.FileSource;
+const std = @import("std");
 
-pub fn build(b: *Builder) void {
+pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    _ = b.addModule("string", .{ .source_file = FileSource.relative("zig-string.zig") });
+    _ = b.addModule("string", .{ .root_source_file = .{ .path = "zig-string.zig" } });
 
     var main_tests = b.addTest(.{
-        .root_source_file = FileSource.relative("zig-string-tests.zig"),
+        .root_source_file = .{ .path = "zig-string-tests.zig" },
         .target = target,
         .optimize = optimize,
     });

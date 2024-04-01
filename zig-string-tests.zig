@@ -189,9 +189,70 @@ test "init with contents" {
     var arena = std.heap.ArenaAllocator.init(page_allocator);
     defer arena.deinit();
 
-    var initial_contents = "String with initial contents!";
+    const initial_contents = "String with initial contents!";
 
     // This is how we create the String with contents at the start
     var myStr = try String.init_with_contents(arena.allocator(), initial_contents);
     assert(eql(u8, myStr.str(), initial_contents));
+}
+
+test "starts_with Tests" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    var myString = String.init(arena.allocator());
+    defer myString.deinit();
+
+    try myString.concat("bananas");
+    assert(myString.starts_with("bana"));
+    assert(!myString.starts_with("abc"));
+}
+
+test "ends_with Tests" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    var myString = String.init(arena.allocator());
+    defer myString.deinit();
+
+    try myString.concat("asbananas");
+    assert(myString.ends_with("nas"));
+    assert(!myString.ends_with("abc"));
+
+    try myString.truncate();
+    try myString.concat("💯hello💯💯hello💯💯hello💯");
+    std.debug.print("", .{});
+    assert(myString.ends_with("hello💯"));
+}
+
+test "replace Tests" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    // Create your String
+    var myString = String.init(arena.allocator());
+    defer myString.deinit();
+
+    try myString.concat("hi,how are you");
+    var result = try myString.replace("hi,", "");
+    assert(result);
+    assert(eql(u8, myString.str(), "how are you"));
+
+    result = try myString.replace("abc", " ");
+    assert(!result);
+
+    myString.clear();
+    try myString.concat("💯hello💯💯hello💯💯hello💯");
+    _ = try myString.replace("hello", "hi");
+    assert(eql(u8, myString.str(), "💯hi💯💯hi💯💯hi💯"));
+}
+
+test "rfind Tests" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    var myString = try String.init_with_contents(arena.allocator(), "💯hi💯💯hi💯💯hi💯");
+    defer myString.deinit();
+
+    assert(myString.rfind("hi") == 9);
 }
