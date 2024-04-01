@@ -15,17 +15,16 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Download zig
-        run: wget https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz
+        run: wget https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.3508+a6ed3e6d2.tar.xz
 
       - name: Extract 
-        run: tar -xf zig-linux-x86_64-0.12.0-dev.2540+776cd673f.tar.xz  
+        run: tar -xf zig-linux-x86_64-0.12.0-dev.3508+a6ed3e6d2.tar.xz  
 
       - name: Alias
-        run: alias zig=$PWD/zig-linux-x86_64-0.12.0-dev.2540+776cd673f/zig
-
+        run: alias zig=$PWD/zig-linux-x86_64-0.12.0-dev.3508+a6ed3e6d2/zig
 
       - name: Version
-        run: $PWD/zig-linux-x86_64-0.12.0-dev.2540+776cd673f/zig version
+        run: $PWD/zig-linux-x86_64-0.12.0-dev.3508+a6ed3e6d2/zig version
         
       - name: Test
-        run: $PWD/zig-linux-x86_64-0.12.0-dev.2540+776cd673f/zig build test
+        run: $PWD/zig-linux-x86_64-0.12.0-dev.3508+a6ed3e6d2/zig build test
