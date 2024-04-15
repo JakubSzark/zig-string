@@ -19,7 +19,7 @@ pub const String = struct {
 
     /// Creates a String with an Allocator
     /// ### example
-    /// ```ts
+    /// ```zig
     /// var str = String.init(allocator);
     /// // don't forgot to deallocate
     /// defer _ = str.deinit();
