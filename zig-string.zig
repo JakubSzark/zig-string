@@ -21,7 +21,7 @@ pub const String = struct {
     /// ### example
     /// ```zig
     /// var str = String.init(allocator);
-    /// // don't forgot to deallocate
+    /// // don't forget to deallocate
     /// defer _ = str.deinit();
     /// ```
     /// User is responsible for managing the new String
