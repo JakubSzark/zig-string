@@ -51,7 +51,7 @@ And add this to you build.zig.zon
         .target = target,
         .optimize = optimize,
     });
-    exe.addModule("string", string.module("string"));
+    exe.root_module.addImport("string", string.module("string"));
 
 ```
 
