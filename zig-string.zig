@@ -511,7 +511,7 @@ pub const String = struct {
     /// Checks the start of the string against a literal
     pub fn startsWith(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
-            return std.mem.endsWith(u8, buffer[0..self.size], literal);
+            return std.mem.startsWith(u8, buffer[0..self.size], literal);
         }
         return false;
     }
