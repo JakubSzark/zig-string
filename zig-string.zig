@@ -4,8 +4,12 @@ const builtin = @import("builtin");
 
 /// A variable length collection of characters
 pub const String = struct {
-    /// The internal representation of the string
-    inner: std.ArrayList(u8),
+    /// The internal character buffer
+    buffer: ?[]u8,
+    /// The allocator used for managing the buffer
+    allocator: std.mem.Allocator,
+    /// The total size of the String
+    size: usize,
 
     /// Errors that may occur when using String
     pub const Error = error{
@@ -28,25 +32,19 @@ pub const String = struct {
             _ = std.os.windows.kernel32.SetConsoleOutputCP(65001);
         }
 
-        return .{ .inner = std.ArrayList(u8).init(allocator) };
+        return .{
+            .buffer = null,
+            .allocator = allocator,
+            .size = 0,
+        };
     }
 
-    pub fn initWithContents(allocator: std.mem.Allocator, contents: []const u8) Error!String {
+    pub fn init_with_contents(allocator: std.mem.Allocator, contents: []const u8) Error!String {
         var string = init(allocator);
 
         try string.concat(contents);
 
         return string;
-    }
-
-    pub fn initWithCapacity(allocator: std.mem.Allocator, num: usize) Error!String {
-        // for windows non-ascii characters
-        // check if the system is windows
-        if (builtin.os.tag == std.Target.Os.Tag.windows) {
-            _ = std.os.windows.kernel32.SetConsoleOutputCP(65001);
-        }
-
-        return .{ .inner = try std.ArrayList(u8).initCapacity(allocator, num) };
     }
 
     /// Deallocates the internal buffer
@@ -57,79 +55,107 @@ pub const String = struct {
     /// defer _ = str.deinit();
     /// ```
     pub fn deinit(self: *String) void {
-        self.inner.deinit();
+        if (self.buffer) |buffer| self.allocator.free(buffer);
     }
 
     /// Returns the size of the internal buffer
-    pub inline fn capacity(self: String) usize {
-        return self.inner.capacity;
+    pub fn capacity(self: String) usize {
+        if (self.buffer) |buffer| return buffer.len;
+        return 0;
     }
 
-    /// Returns the length of the string
-    pub inline fn len(self: String) usize {
-        return self.inner.items.len;
-    }
-
-    /// Allocates `bytes` space for the internal buffer
+    /// Allocates space for the internal buffer
     pub fn allocate(self: *String, bytes: usize) Error!void {
-        if (self.inner.items.len > bytes) {
-            self.inner.items.len = bytes;
-            return;
+        if (self.buffer) |buffer| {
+            if (bytes < self.size) self.size = bytes; // Clamp size to capacity
+            self.buffer = self.allocator.realloc(buffer, bytes) catch {
+                return Error.OutOfMemory;
+            };
         } else {
-            self.inner.ensureTotalCapacity(bytes) catch return Error.OutOfMemory;
+            self.buffer = self.allocator.alloc(u8, bytes) catch {
+                return Error.OutOfMemory;
+            };
         }
-    }
-
-    /// Allocates exactly `bytes` space for the internal buffer
-    pub fn allocatePrecise(self: *String, bytes: usize) Error!void {
-        self.inner.ensureTotalCapacityPrecise(bytes) catch return Error.OutOfMemory;
-    }
-
-    /// Allocates `bytes` more space for the internal buffer
-    pub fn allocateExtra(self: *String, bytes: usize) Error!void {
-        self.inner.ensureUnusedCapacity(bytes) catch return Error.OutOfMemory;
     }
 
     /// Reallocates the the internal buffer to size
     pub fn truncate(self: *String) Error!void {
-        try self.allocate(self.len());
+        try self.allocate(self.size);
     }
 
     /// Appends a character onto the end of the String
     pub fn concat(self: *String, char: []const u8) Error!void {
-        self.inner.appendSlice(char) catch return Error.OutOfMemory;
+        try self.insert(char, self.len());
     }
 
     /// Inserts a string literal into the String at an index
     pub fn insert(self: *String, literal: []const u8, index: usize) Error!void {
-        self.inner.insertSlice(index, literal) catch return Error.OutOfMemory;
+        // Make sure buffer has enough space
+        if (self.buffer) |buffer| {
+            if (self.size + literal.len > buffer.len) {
+                try self.allocate((self.size + literal.len) * 2);
+            }
+        } else {
+            try self.allocate((literal.len) * 2);
+        }
+
+        const buffer = self.buffer.?;
+
+        // If the index is >= len, then simply push to the end.
+        // If not, then copy contents over and insert literal.
+        if (index == self.len()) {
+            var i: usize = 0;
+            while (i < literal.len) : (i += 1) {
+                buffer[self.size + i] = literal[i];
+            }
+        } else {
+            if (String.getIndex(buffer, index, true)) |k| {
+                // Move existing contents over
+                var i: usize = buffer.len - 1;
+                while (i >= k) : (i -= 1) {
+                    if (i + literal.len < buffer.len) {
+                        buffer[i + literal.len] = buffer[i];
+                    }
+
+                    if (i == 0) break;
+                }
+
+                i = 0;
+                while (i < literal.len) : (i += 1) {
+                    buffer[index + i] = literal[i];
+                }
+            }
+        }
+
+        self.size += literal.len;
     }
 
     /// Removes the last character from the String
     pub fn pop(self: *String) ?[]const u8 {
-        if (self.len() == 0) return null;
+        if (self.size == 0) return null;
 
-        var i: usize = 0;
-        while (i < self.len()) {
-            const size = String.getUTF8Size(self.str()[i]);
-            if (i + size >= self.len()) break;
-            i += size;
+        if (self.buffer) |buffer| {
+            var i: usize = 0;
+            while (i < self.size) {
+                const size = String.getUTF8Size(buffer[i]);
+                if (i + size >= self.size) break;
+                i += size;
+            }
+
+            const ret = buffer[i..self.size];
+            self.size -= (self.size - i);
+            return ret;
         }
 
-        const ret = self.inner.items[i..self.len()];
-        self.inner.items.len -= (self.inner.items.len - i);
-        return ret;
+        return null;
     }
 
     /// Compares this String with a string literal
     pub fn cmp(self: String, literal: []const u8) bool {
-        return std.mem.eql(u8, self.str(), literal);
-    }
-
-    /// Compares this String with a string literal
-    /// This is an alias for cmp
-    pub fn eql(self: String, literal: []const u8) bool {
-        return cmp(self.str(), literal);
+        if (self.buffer) |buffer| {
+            return std.mem.eql(u8, buffer[0..self.size], literal);
+        }
+        return false;
     }
 
     /// Returns the String buffer as a string literal
@@ -139,56 +165,76 @@ pub const String = struct {
     ///defer _ = mystr.deinit();
     ///std.debug.print("{s}\n", .{mystr.str()});
     ///```
-    pub inline fn str(self: String) []u8 {
-        return self.inner.items;
+    pub fn str(self: String) []const u8 {
+        if (self.buffer) |buffer| return buffer[0..self.size];
+        return "";
     }
 
     /// Returns an owned slice of this string
     pub fn toOwned(self: String) Error!?[]u8 {
-        const string = self.str();
-        if (self.inner.allocator.alloc(u8, string.len)) |newStr| {
-            std.mem.copyForwards(u8, newStr, string);
-            return newStr;
-        } else |_| {
-            return Error.OutOfMemory;
+        if (self.buffer != null) {
+            const string = self.str();
+            if (self.allocator.alloc(u8, string.len)) |newStr| {
+                std.mem.copyForwards(u8, newStr, string);
+                return newStr;
+            } else |_| {
+                return Error.OutOfMemory;
+            }
         }
+
+        return null;
     }
 
     /// Returns a character at the specified index
     pub fn charAt(self: String, index: usize) ?[]const u8 {
-        if (String.getIndex(self.str(), index, true)) |i| {
-            const size = String.getUTF8Size(self.str()[i]);
-            return self.str()[i..(i + size)];
+        if (self.buffer) |buffer| {
+            if (String.getIndex(buffer, index, true)) |i| {
+                const size = String.getUTF8Size(buffer[i]);
+                return buffer[i..(i + size)];
+            }
         }
+        return null;
     }
 
     /// Returns amount of characters in the String
-    pub fn char_count(self: String) usize {
-        var count: usize = 0;
-        var i: usize = 0;
+    pub fn len(self: String) usize {
+        if (self.buffer) |buffer| {
+            var length: usize = 0;
+            var i: usize = 0;
 
-        while (i < self.len()) {
-            i += String.getUTF8Size(self.inner.items[i]);
-            count += 1;
+            while (i < self.size) {
+                i += String.getUTF8Size(buffer[i]);
+                length += 1;
+            }
+
+            return length;
+        } else {
+            return 0;
         }
-
-        return count;
     }
 
     /// Finds the first occurrence of the string literal
     pub fn find(self: String, literal: []const u8) ?usize {
-        const index = std.mem.indexOf(u8, self.str()[0..self.len()], literal);
-        if (index) |i| {
-            return String.getIndex(self.str(), i, false);
+        if (self.buffer) |buffer| {
+            const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
+            if (index) |i| {
+                return String.getIndex(buffer, i, false);
+            }
         }
+
+        return null;
     }
 
     /// Finds the last occurrence of the string literal
     pub fn rfind(self: String, literal: []const u8) ?usize {
-        const index = std.mem.lastIndexOf(u8, self.inner.items[0..self.len()], literal);
-        if (index) |i| {
-            return String.getIndex(self.str(), i, false);
+        if (self.buffer) |buffer| {
+            const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
+            if (index) |i| {
+                return String.getIndex(buffer, i, false);
+            }
         }
+
+        return null;
     }
 
     /// Removes a character at the specified index
@@ -199,31 +245,35 @@ pub const String = struct {
     /// Removes a range of character from the String
     /// Start (inclusive) - End (Exclusive)
     pub fn removeRange(self: *String, start: usize, end: usize) Error!void {
-        const length = self.char_count();
+        const length = self.len();
         if (end < start or end > length) return Error.InvalidRange;
 
-        const rStart = String.getIndex(self.str(), start, true).?;
-        const rEnd = String.getIndex(self.str(), end, true).?;
-        const difference = rEnd - rStart;
+        if (self.buffer) |buffer| {
+            const rStart = String.getIndex(buffer, start, true).?;
+            const rEnd = String.getIndex(buffer, end, true).?;
+            const difference = rEnd - rStart;
 
-        var i: usize = rEnd;
-        while (i < self.len()) : (i += 1) {
-            self.str()[i - difference] = self.str()[i];
+            var i: usize = rEnd;
+            while (i < self.size) : (i += 1) {
+                buffer[i - difference] = buffer[i];
+            }
+
+            self.size -= difference;
         }
-
-        self.str().len -= difference;
     }
 
     /// Trims all whitelist characters at the start of the String.
     pub fn trimStart(self: *String, whitelist: []const u8) void {
-        var i: usize = 0;
-        while (i < self.len()) : (i += 1) {
-            const size = String.getUTF8Size(self.str()[i]);
-            if (size > 1 or !inWhitelist(self.str()[i], whitelist)) break;
-        }
+        if (self.buffer) |buffer| {
+            var i: usize = 0;
+            while (i < self.size) : (i += 1) {
+                const size = String.getUTF8Size(buffer[i]);
+                if (size > 1 or !inWhitelist(buffer[i], whitelist)) break;
+            }
 
-        if (String.getIndex(self.str(), i, false)) |k| {
-            self.removeRange(0, k) catch {};
+            if (String.getIndex(buffer, i, false)) |k| {
+                self.removeRange(0, k) catch {};
+            }
         }
     }
 
@@ -243,63 +293,72 @@ pub const String = struct {
     /// Copies this String into a new one
     /// User is responsible for managing the new String
     pub fn clone(self: String) Error!String {
-        return String.initWithContents(self.allocator, self.str());
+        var newString = String.init(self.allocator);
+        try newString.concat(self.str());
+        return newString;
     }
 
     /// Reverses the characters in this String
     pub fn reverse(self: *String) void {
-        var i: usize = 0;
-        while (i < self.len()) {
-            const size = String.getUTF8Size(self.str()[i]);
-            if (size > 1) std.mem.reverse(u8, self.str()[i..(i + size)]);
-            i += size;
-        }
+        if (self.buffer) |buffer| {
+            var i: usize = 0;
+            while (i < self.size) {
+                const size = String.getUTF8Size(buffer[i]);
+                if (size > 1) std.mem.reverse(u8, buffer[i..(i + size)]);
+                i += size;
+            }
 
-        std.mem.reverse(u8, self.str()[0..self.len()]);
+            std.mem.reverse(u8, buffer[0..self.size]);
+        }
     }
 
     /// Repeats this String n times
     pub fn repeat(self: *String, n: usize) Error!void {
-        try self.allocate(self.len() * (n + 1));
-
-        var i: usize = 1;
-        while (i <= n) : (i += 1) {
-            var j: usize = 0;
-            while (j < self.len()) : (j += 1) {
-                self.str()[((i * self.len()) + j)] = self.str()[j];
+        try self.allocate(self.size * (n + 1));
+        if (self.buffer) |buffer| {
+            var i: usize = 1;
+            while (i <= n) : (i += 1) {
+                var j: usize = 0;
+                while (j < self.size) : (j += 1) {
+                    buffer[((i * self.size) + j)] = buffer[j];
+                }
             }
-        }
 
-        self.inner.items.len *= (n + 1);
+            self.size *= (n + 1);
+        }
     }
 
     /// Checks the String is empty
     pub inline fn isEmpty(self: String) bool {
-        return self.len() == 0;
+        return self.size == 0;
     }
 
     /// Splits the String into a slice, based on a delimiter and an index
     pub fn split(self: *const String, delimiters: []const u8, index: usize) ?[]const u8 {
-        var i: usize = 0;
-        var block: usize = 0;
-        var start: usize = 0;
+        if (self.buffer) |buffer| {
+            var i: usize = 0;
+            var block: usize = 0;
+            var start: usize = 0;
 
-        while (i < self.len()) {
-            const size = String.getUTF8Size(self.str()[i]);
-            if (size == delimiters.len) {
-                if (std.mem.eql(u8, delimiters, self.str()[i..(i + size)])) {
-                    if (block == index) return self.str()[start..i];
-                    start = i + size;
-                    block += 1;
+            while (i < self.size) {
+                const size = String.getUTF8Size(buffer[i]);
+                if (size == delimiters.len) {
+                    if (std.mem.eql(u8, delimiters, buffer[i..(i + size)])) {
+                        if (block == index) return buffer[start..i];
+                        start = i + size;
+                        block += 1;
+                    }
                 }
+
+                i += size;
             }
 
-            i += size;
+            if (i >= self.size - 1 and block == index) {
+                return buffer[start..self.size];
+            }
         }
 
-        if (i >= self.len() - 1 and block == index) {
-            return self.str()[start..self.len()];
-        }
+        return null;
     }
 
     /// Splits the String into a new string, based on delimiters and an index
@@ -316,26 +375,33 @@ pub const String = struct {
 
     /// Clears the contents of the String but leaves the capacity
     pub fn clear(self: *String) void {
-        self.inner.clearRetainingCapacity();
+        if (self.buffer) |buffer| {
+            for (buffer) |*ch| ch.* = 0;
+            self.size = 0;
+        }
     }
 
     /// Converts all (ASCII) uppercase letters to lowercase
     pub fn toLowercase(self: *String) void {
-        var i: usize = 0;
-        while (i < self.len()()) {
-            const size = String.getUTF8Size(self.inner.items[i]);
-            if (size == 1) self.inner.items[i] = std.ascii.toLower(self.inner.items[i]);
-            i += size;
+        if (self.buffer) |buffer| {
+            var i: usize = 0;
+            while (i < self.size) {
+                const size = String.getUTF8Size(buffer[i]);
+                if (size == 1) buffer[i] = std.ascii.toLower(buffer[i]);
+                i += size;
+            }
         }
     }
 
     /// Converts all (ASCII) uppercase letters to lowercase
     pub fn toUppercase(self: *String) void {
-        var i: usize = 0;
-        while (i < self.len()()) {
-            const size = String.getUTF8Size(self.inner.items[i]);
-            if (size == 1) self.inner.items[i] = std.ascii.toUpper(self.inner.items[i]);
-            i += size;
+        if (self.buffer) |buffer| {
+            var i: usize = 0;
+            while (i < self.size) {
+                const size = String.getUTF8Size(buffer[i]);
+                if (size == 1) buffer[i] = std.ascii.toUpper(buffer[i]);
+                i += size;
+            }
         }
     }
 
@@ -344,11 +410,13 @@ pub const String = struct {
     pub fn substr(self: String, start: usize, end: usize) Error!String {
         var result = String.init(self.allocator);
 
-        if (String.getIndex(self.str(), start, true)) |rStart| {
-            if (String.getIndex(self.str(), end, true)) |rEnd| {
-                if (rEnd < rStart or rEnd > self.len())
-                    return Error.InvalidRange;
-                try result.concat(self.str()[rStart..rEnd]);
+        if (self.buffer) |buffer| {
+            if (String.getIndex(buffer, start, true)) |rStart| {
+                if (String.getIndex(buffer, end, true)) |rEnd| {
+                    if (rEnd < rStart or rEnd > self.size)
+                        return Error.InvalidRange;
+                    try result.concat(buffer[rStart..rEnd]);
+                }
             }
         }
 
@@ -376,10 +444,14 @@ pub const String = struct {
             index: usize,
 
             pub fn next(it: *StringIterator) ?[]const u8 {
-                if (it.index == it.string.size) return null;
-                const i = it.index;
-                it.index += String.getUTF8Size(it.string.inner.items[i]);
-                return it.string.inner.items[i..it.index];
+                if (it.string.buffer) |buffer| {
+                    if (it.index == it.string.size) return null;
+                    const i = it.index;
+                    it.index += String.getUTF8Size(buffer[i]);
+                    return buffer[i..it.index];
+                } else {
+                    return null;
+                }
             }
         };
 
@@ -438,27 +510,37 @@ pub const String = struct {
 
     /// Checks the start of the string against a literal
     pub fn startsWith(self: *String, literal: []const u8) bool {
-        return std.mem.startsWith(u8, self.inner.items, literal);
+        if (self.buffer) |buffer| {
+            const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
+            return index == 0;
+        }
+        return false;
     }
 
     /// Checks the end of the string against a literal
     pub fn endsWith(self: *String, literal: []const u8) bool {
-        return std.mem.endsWith(u8, self.inner.items, literal);
+        if (self.buffer) |buffer| {
+            const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
+            const i: usize = self.size - literal.len;
+            return index == i;
+        }
+        return false;
     }
 
     /// Replaces all occurrences of a string literal with another
     pub fn replace(self: *String, needle: []const u8, replacement: []const u8) !bool {
-        const InputSize = self.len();
-        const size = std.mem.replacementSize(u8, self.str()[0..InputSize], needle, replacement);
-        self.inner.items = self.allocator.alloc(u8, size) catch {
-            return Error.OutOfMemory;
-        };
-        self.inner.items.len = size;
-        const changes = std.mem.replace(u8, self.str()[0..InputSize], needle, replacement, self.self.str());
-        if (changes > 0) {
-            return true;
+        if (self.buffer) |buffer| {
+            const InputSize = self.size;
+            const size = std.mem.replacementSize(u8, buffer[0..InputSize], needle, replacement);
+            self.buffer = self.allocator.alloc(u8, size) catch {
+                return Error.OutOfMemory;
+            };
+            self.size = size;
+            const changes = std.mem.replace(u8, buffer[0..InputSize], needle, replacement, self.buffer.?);
+            if (changes > 0) {
+                return true;
+            }
         }
-
         return false;
     }
 };
