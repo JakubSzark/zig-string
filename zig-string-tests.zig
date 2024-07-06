@@ -1,7 +1,8 @@
 const std = @import("std");
 const ArenaAllocator = std.heap.ArenaAllocator;
-const eql = std.mem.eql;
 const expect = std.testing.expect;
+const expectEqual = std.testing.expectEqual;
+const expectEqualStrings = std.testing.expectEqualStrings;
 
 const zig_string = @import("./zig-string.zig");
 const String = zig_string.String;
@@ -36,13 +37,13 @@ test "String Tests" {
 
     // allocate & capacity
     try myStr.allocate(16);
-    try expect(myStr.capacity() == 16);
-    try expect(myStr.size == 0);
+    try expectEqual(myStr.capacity(), 16);
+    try expectEqual(myStr.size, 0);
 
     // truncate
     try myStr.truncate();
-    try expect(myStr.capacity() == myStr.size);
-    try expect(myStr.capacity() == 0);
+    try expectEqual(myStr.capacity(), myStr.size);
+    try expectEqual(myStr.capacity(), 0);
 
     // concat
     try myStr.concat("A");
@@ -50,33 +51,33 @@ test "String Tests" {
     try myStr.concat("💯");
     try myStr.concat("Hello🔥");
 
-    try expect(myStr.size == 17);
+    try expectEqual(myStr.size, 17);
 
     // pop & length
-    try expect(myStr.len() == 9);
-    try expect(eql(u8, myStr.pop().?, "🔥"));
-    try expect(myStr.len() == 8);
-    try expect(eql(u8, myStr.pop().?, "o"));
-    try expect(myStr.len() == 7);
+    try expectEqual(myStr.len(), 9);
+    try expectEqualStrings(myStr.pop().?, "🔥");
+    try expectEqual(myStr.len(), 8);
+    try expectEqualStrings(myStr.pop().?, "o");
+    try expectEqual(myStr.len(), 7);
 
     // str & cmp
     try expect(myStr.cmp("A\u{5360}💯Hell"));
     try expect(myStr.cmp(myStr.str()));
 
     // charAt
-    try expect(eql(u8, myStr.charAt(2).?, "💯"));
-    try expect(eql(u8, myStr.charAt(1).?, "\u{5360}"));
-    try expect(eql(u8, myStr.charAt(0).?, "A"));
+    try expectEqualStrings(myStr.charAt(2).?, "💯");
+    try expectEqualStrings(myStr.charAt(1).?, "\u{5360}");
+    try expectEqualStrings(myStr.charAt(0).?, "A");
 
     // insert
     try myStr.insert("🔥", 1);
-    try expect(eql(u8, myStr.charAt(1).?, "🔥"));
+    try expectEqualStrings(myStr.charAt(1).?, "🔥");
     try expect(myStr.cmp("A🔥\u{5360}💯Hell"));
 
     // find
-    try expect(myStr.find("🔥").? == 1);
-    try expect(myStr.find("💯").? == 3);
-    try expect(myStr.find("Hell").? == 4);
+    try expectEqual(myStr.find("🔥").?, 1);
+    try expectEqual(myStr.find("💯").?, 3);
+    try expectEqual(myStr.find("Hell").?, 4);
 
     // remove & removeRange
     try myStr.removeRange(0, 3);
@@ -115,26 +116,26 @@ test "String Tests" {
     try expect(!myStr.isEmpty());
 
     // split
-    try expect(eql(u8, myStr.split("💯", 0).?, ""));
-    try expect(eql(u8, myStr.split("💯", 1).?, "Hello"));
-    try expect(eql(u8, myStr.split("💯", 2).?, ""));
-    try expect(eql(u8, myStr.split("💯", 3).?, "Hello"));
-    try expect(eql(u8, myStr.split("💯", 5).?, "Hello"));
-    try expect(eql(u8, myStr.split("💯", 6).?, ""));
+    try expectEqualStrings(myStr.split("💯", 0).?, "");
+    try expectEqualStrings(myStr.split("💯", 1).?, "Hello");
+    try expectEqualStrings(myStr.split("💯", 2).?, "");
+    try expectEqualStrings(myStr.split("💯", 3).?, "Hello");
+    try expectEqualStrings(myStr.split("💯", 5).?, "Hello");
+    try expectEqualStrings(myStr.split("💯", 6).?, "");
 
     var splitStr = String.init(arena.allocator());
     defer splitStr.deinit();
 
     try splitStr.concat("variable='value'");
-    try expect(eql(u8, splitStr.split("=", 0).?, "variable"));
-    try expect(eql(u8, splitStr.split("=", 1).?, "'value'"));
+    try expectEqualStrings(splitStr.split("=", 0).?, "variable");
+    try expectEqualStrings(splitStr.split("=", 1).?, "'value'");
 
     // splitToString
     var newSplit = try splitStr.splitToString("=", 0);
     try expect(newSplit != null);
     defer newSplit.?.deinit();
 
-    try expect(eql(u8, newSplit.?.str(), "variable"));
+    try expectEqualStrings(newSplit.?.str(), "variable");
 
     // toLowercase & toUppercase
     myStr.toUppercase();
@@ -149,17 +150,17 @@ test "String Tests" {
 
     // clear
     myStr.clear();
-    try expect(myStr.len() == 0);
-    try expect(myStr.size == 0);
+    try expectEqual(myStr.len(), 0);
+    try expectEqual(myStr.size, 0);
 
     // writer
     const writer = myStr.writer();
     const length = try writer.write("This is a Test!");
-    try expect(length == 15);
+    try expectEqual(length, 15);
 
     // owned
     const mySlice = try myStr.toOwned();
-    try expect(eql(u8, mySlice.?, "This is a Test!"));
+    try expectEqualStrings(mySlice.?, "This is a Test!");
     arena.allocator().free(mySlice.?);
 
     // StringIterator
@@ -167,12 +168,12 @@ test "String Tests" {
     var iter = myStr.iterator();
     while (iter.next()) |ch| {
         if (i == 0) {
-            try expect(eql(u8, "T", ch));
+            try expectEqualStrings("T", ch);
         }
         i += 1;
     }
 
-    try expect(i == myStr.len());
+    try expectEqual(i, myStr.len());
 
     // setStr
     const contents = "setStr Test!";
@@ -180,7 +181,7 @@ test "String Tests" {
     try expect(myStr.cmp(contents));
 
     // non ascii supports in windows
-    // try expect(std.os.windows.kernel32.GetConsoleOutputCP() == 65001);
+    // try expectEqual(std.os.windows.kernel32.GetConsoleOutputCP(), 65001);
 }
 
 test "init with contents" {
@@ -193,7 +194,7 @@ test "init with contents" {
 
     // This is how we create the String with contents at the start
     var myStr = try String.init_with_contents(arena.allocator(), initial_contents);
-    try expect(eql(u8, myStr.str(), initial_contents));
+    try expectEqualStrings(myStr.str(), initial_contents);
 }
 
 test "startsWith Tests" {
@@ -236,7 +237,7 @@ test "replace Tests" {
     try myString.concat("hi,how are you");
     var result = try myString.replace("hi,", "");
     try expect(result);
-    try expect(eql(u8, myString.str(), "how are you"));
+    try expectEqualStrings(myString.str(), "how are you");
 
     result = try myString.replace("abc", " ");
     try expect(!result);
@@ -244,7 +245,7 @@ test "replace Tests" {
     myString.clear();
     try myString.concat("💯hello💯💯hello💯💯hello💯");
     _ = try myString.replace("hello", "hi");
-    try expect(eql(u8, myString.str(), "💯hi💯💯hi💯💯hi💯"));
+    try expectEqualStrings(myString.str(), "💯hi💯💯hi💯💯hi💯");
 }
 
 test "rfind Tests" {
@@ -254,5 +255,5 @@ test "rfind Tests" {
     var myString = try String.init_with_contents(arena.allocator(), "💯hi💯💯hi💯💯hi💯");
     defer myString.deinit();
 
-    try expect(myString.rfind("hi") == 9);
+    try expectEqual(myString.rfind("hi"), 9);
 }
