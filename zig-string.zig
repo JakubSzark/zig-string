@@ -293,9 +293,7 @@ pub const String = struct {
     /// Copies this String into a new one
     /// User is responsible for managing the new String
     pub fn clone(self: String) Error!String {
-        var newString = String.init(self.allocator);
-        try newString.concat(self.str());
-        return newString;
+        return String.init_with_contents(self.allocator, self.str());
     }
 
     /// Reverses the characters in this String
