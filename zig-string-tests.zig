@@ -1,6 +1,8 @@
 const std = @import("std");
 const ArenaAllocator = std.heap.ArenaAllocator;
 const assert = std.debug.assert;
+const expectEqual = std.testing.expectEqual;
+const expect = std.testing.expect;
 const eql = std.mem.eql;
 
 const zig_string = @import("./zig-string.zig");
@@ -145,8 +147,9 @@ test "String Tests" {
     var lineStr = try String.init_with_contents(arena.allocator(), lineSlice);
     var linesSlice = try lineStr.getLines();
 
-    assert(linesSlice[0].cmp("Line0"));
-    assert(linesSlice[1].cmp("Line1"));
+    try expectEqual(linesSlice.len, 2);
+    try expect(linesSlice[0].cmp("Line0"));
+    try expect(linesSlice[1].cmp("Line1"));
 
     // toLowercase & toUppercase
     myStr.toUppercase();
