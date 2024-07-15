@@ -293,9 +293,7 @@ pub const String = struct {
     /// Copies this String into a new one
     /// User is responsible for managing the new String
     pub fn clone(self: String) Error!String {
-        var newString = String.init(self.allocator);
-        try newString.concat(self.str());
-        return newString;
+        return String.init_with_contents(self.allocator, self.str());
     }
 
     /// Reverses the characters in this String
@@ -511,8 +509,7 @@ pub const String = struct {
     /// Checks the start of the string against a literal
     pub fn startsWith(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
-            const index = std.mem.indexOf(u8, buffer[0..self.size], literal);
-            return index == 0;
+            return std.mem.startsWith(u8, buffer[0..self.size], literal);
         }
         return false;
     }
@@ -520,9 +517,7 @@ pub const String = struct {
     /// Checks the end of the string against a literal
     pub fn endsWith(self: *String, literal: []const u8) bool {
         if (self.buffer) |buffer| {
-            const index = std.mem.lastIndexOf(u8, buffer[0..self.size], literal);
-            const i: usize = self.size - literal.len;
-            return index == i;
+            return std.mem.endsWith(u8, buffer[0..self.size], literal);
         }
         return false;
     }
