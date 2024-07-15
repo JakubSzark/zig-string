@@ -100,6 +100,7 @@ If there are any issues with <b>complexity</b> please <b>open an issue</b>
 | reverse            | Reverses all the characters                                              |
 | split              | Returns a slice based on delimiters                                      |
 | splitToString      | Returns a String based on delimiters                                     |
+| getLines           | Returns a slice of Strings split by newlines                             |
 | str                | Returns the String as a slice                                            |
 | substr             | Creates a string from a range                                            |
 | toLowercase        | Converts (ASCII) characters to lowercase                                 |
