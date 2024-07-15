@@ -378,10 +378,13 @@ pub const String = struct {
         var line_arr = std.ArrayList(String).init(std.heap.page_allocator);
         defer line_arr.deinit();
 
-        _ = try self.replace("\r\n", "\n");
+        var self_clone = try self.clone();
+        defer self_clone.deinit();
+
+        _ = try self_clone.replace("\r\n", "\n");
 
         var i: usize = 0;
-        while (try self.splitToString("\n", i)) |line| : (i += 1) {
+        while (try self_clone.splitToString("\n", i)) |line| : (i += 1) {
             try line_arr.append(line);
         }
 
