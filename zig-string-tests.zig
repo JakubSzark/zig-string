@@ -139,17 +139,15 @@ test "String Tests" {
     assert(eql(u8, newSplit.?.str(), "variable"));
 
     // getLines
-    const lineSlice =
-        \\Line0
-        \\Line1
-    ;
+    const lineSlice = "Line0\r\nLine1\nLine2";
 
     var lineStr = try String.init_with_contents(arena.allocator(), lineSlice);
     var linesSlice = try lineStr.getLines();
 
-    try expectEqual(linesSlice.len, 2);
+    try expectEqual(linesSlice.len, 3);
     try expect(linesSlice[0].cmp("Line0"));
     try expect(linesSlice[1].cmp("Line1"));
+    try expect(linesSlice[2].cmp("Line2"));
 
     // toLowercase & toUppercase
     myStr.toUppercase();
