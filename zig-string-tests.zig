@@ -136,6 +136,18 @@ test "String Tests" {
 
     assert(eql(u8, newSplit.?.str(), "variable"));
 
+    // getLines
+    const lineSlice =
+        \\Line0
+        \\Line1
+    ;
+
+    var lineStr = try String.init_with_contents(arena.allocator(), lineSlice);
+    var linesSlice = try lineStr.getLines();
+
+    assert(linesSlice[0].cmp("Line0"));
+    assert(linesSlice[1].cmp("Line1"));
+
     // toLowercase & toUppercase
     myStr.toUppercase();
     assert(myStr.cmp("💯HELLO💯💯HELLO💯💯HELLO💯"));
