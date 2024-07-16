@@ -374,21 +374,21 @@ pub const String = struct {
     }
 
     /// Splits the String into a slice of Strings by new line (\r\n or \n).
-    pub fn getLines(self: *String) ![]String {
-        var line_arr = std.ArrayList(String).init(std.heap.page_allocator);
-        defer line_arr.deinit();
+    pub fn lines(self: *String) ![]String {
+        var lineArr = std.ArrayList(String).init(std.heap.page_allocator);
+        defer lineArr.deinit();
 
-        var self_clone = try self.clone();
-        defer self_clone.deinit();
+        var selfClone = try self.clone();
+        defer selfClone.deinit();
 
-        _ = try self_clone.replace("\r\n", "\n");
+        _ = try selfClone.replace("\r\n", "\n");
 
         var i: usize = 0;
-        while (try self_clone.splitToString("\n", i)) |line| : (i += 1) {
-            try line_arr.append(line);
+        while (try selfClone.splitToString("\n", i)) |line| : (i += 1) {
+            try lineArr.append(line);
         }
 
-        return try line_arr.toOwnedSlice();
+        return try lineArr.toOwnedSlice();
     }
 
     /// Clears the contents of the String but leaves the capacity
