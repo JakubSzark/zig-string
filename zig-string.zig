@@ -361,6 +361,19 @@ pub const String = struct {
         return null;
     }
 
+    /// Splits the String into slices, based on a delimiter.
+    pub fn splitAll(self: *const String, delimiters: []const u8) ![][]const u8 {
+        var splitArr = std.ArrayList([]const u8).init(std.heap.page_allocator);
+        defer splitArr.deinit();
+
+        var i: usize = 0;
+        while (self.split(delimiters, i)) |slice| : (i += 1) {
+            try splitArr.append(slice);
+        }
+
+        return try splitArr.toOwnedSlice();
+    }
+
     /// Splits the String into a new string, based on delimiters and an index
     /// The user of this function is in charge of the memory of the new String.
     pub fn splitToString(self: *const String, delimiters: []const u8, index: usize) Error!?String {
@@ -373,6 +386,20 @@ pub const String = struct {
         return null;
     }
 
+    /// Splits the String into a slice of new Strings, based on delimiters.
+    /// The user of this function is in charge of the memory of the new Strings.
+    pub fn splitAllToStrings(self: *const String, delimiters: []const u8) ![]String {
+        var splitArr = std.ArrayList(String).init(std.heap.page_allocator);
+        defer splitArr.deinit();
+
+        var i: usize = 0;
+        while (try self.splitToString(delimiters, i)) |splitStr| : (i += 1) {
+            try splitArr.append(splitStr);
+        }
+
+        return try splitArr.toOwnedSlice();
+    }
+
     /// Splits the String into a slice of Strings by new line (\r\n or \n).
     pub fn lines(self: *String) ![]String {
         var lineArr = std.ArrayList(String).init(std.heap.page_allocator);
@@ -383,12 +410,7 @@ pub const String = struct {
 
         _ = try selfClone.replace("\r\n", "\n");
 
-        var i: usize = 0;
-        while (try selfClone.splitToString("\n", i)) |line| : (i += 1) {
-            try lineArr.append(line);
-        }
-
-        return try lineArr.toOwnedSlice();
+        return try selfClone.splitAllToStrings("\n");
     }
 
     /// Clears the contents of the String but leaves the capacity
