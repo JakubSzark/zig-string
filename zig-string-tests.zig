@@ -130,12 +130,33 @@ test "String Tests" {
     try expectEqualStrings(splitStr.split("=", 0).?, "variable");
     try expectEqualStrings(splitStr.split("=", 1).?, "'value'");
 
+    // splitAll
+    const splitAllStr = try String.init_with_contents(arena.allocator(), "THIS IS A  TEST");
+    const splitAllSlices = try splitAllStr.splitAll(" ");
+
+    try expectEqual(splitAllSlices.len, 5);
+    try expectEqualStrings(splitAllSlices[0], "THIS");
+    try expectEqualStrings(splitAllSlices[1], "IS");
+    try expectEqualStrings(splitAllSlices[2], "A");
+    try expectEqualStrings(splitAllSlices[3], "");
+    try expectEqualStrings(splitAllSlices[4], "TEST");
+
     // splitToString
     var newSplit = try splitStr.splitToString("=", 0);
     try expect(newSplit != null);
     defer newSplit.?.deinit();
 
     try expectEqualStrings(newSplit.?.str(), "variable");
+
+    // splitAllToStrings
+    const splitAllStrings = try splitAllStr.splitAllToStrings(" ");
+
+    try expectEqual(splitAllStrings.len, 5);
+    try expectEqualStrings(splitAllStrings[0].str(), "THIS");
+    try expectEqualStrings(splitAllStrings[1].str(), "IS");
+    try expectEqualStrings(splitAllStrings[2].str(), "A");
+    try expectEqualStrings(splitAllStrings[3].str(), "");
+    try expectEqualStrings(splitAllStrings[4].str(), "TEST");
 
     // lines
     const lineSlice = "Line0\r\nLine1\nLine2";
