@@ -373,6 +373,24 @@ pub const String = struct {
         return null;
     }
 
+    /// Splits the String into a slice of Strings by new line (\r\n or \n).
+    pub fn lines(self: *String) ![]String {
+        var lineArr = std.ArrayList(String).init(std.heap.page_allocator);
+        defer lineArr.deinit();
+
+        var selfClone = try self.clone();
+        defer selfClone.deinit();
+
+        _ = try selfClone.replace("\r\n", "\n");
+
+        var i: usize = 0;
+        while (try selfClone.splitToString("\n", i)) |line| : (i += 1) {
+            try lineArr.append(line);
+        }
+
+        return try lineArr.toOwnedSlice();
+    }
+
     /// Clears the contents of the String but leaves the capacity
     pub fn clear(self: *String) void {
         if (self.buffer) |buffer| {
