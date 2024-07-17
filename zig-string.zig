@@ -316,12 +316,8 @@ pub const String = struct {
     pub fn repeat(self: *String, n: usize) Error!void {
         try self.allocate(self.size * (n + 1));
         if (self.buffer) |buffer| {
-            var i: usize = 1;
-            while (i <= n) : (i += 1) {
-                var j: usize = 0;
-                while (j < self.size) : (j += 1) {
-                    buffer[((i * self.size) + j)] = buffer[j];
-                }
+            for (1..n + 1) |i| {
+                std.mem.copyForwards(u8, buffer[self.size * i ..], buffer[0..self.size]);
             }
 
             self.size *= (n + 1);
