@@ -9,11 +9,12 @@ Also it may be useful for some people who need it (including myself), with futur
 # Basic Usage
 
 ```zig
+const std = @import("std");
 const String = @import("./zig-string.zig").String;
 // ...
 
 // Use your favorite allocator
-var arena = ArenaAllocator.init(std.heap.page_allocator);
+var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
 defer arena.deinit();
 
 // Create your String
@@ -26,7 +27,7 @@ _ = myString.pop();
 try myString.concat(", World 🔥");
 
 // Success!
-assert(myString.cmp("🔥 Hello, World 🔥"));
+std.debug.assert(myString.cmp("🔥 Hello, World 🔥"));
 
 ```
 
@@ -44,7 +45,7 @@ Add this to your build.zig.zon
 
 ```
 
-And add this to you build.zig.zon
+And add this to you build.zig
 
 ```zig
     const string = b.dependency("string", .{
