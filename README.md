@@ -44,7 +44,7 @@ Add this to your build.zig.zon
 
 ```
 
-And add this to you build.zig.zon
+And add this to you build.zig
 
 ```zig
     const string = b.dependency("string", .{
