@@ -441,6 +441,32 @@ pub const String = struct {
         }
     }
 
+    // Convert the first (ASCII) character of each word to uppercase
+    pub fn toCapitalized(self: *String) void {
+        if (self.size == 0) return;
+
+        var buffer = self.buffer.?;
+        var i: usize = 0;
+        var is_new_word: bool = true;
+
+        while (i < self.size) {
+            const char = buffer[i];
+
+            if (std.ascii.isWhitespace(char)) {
+                is_new_word = true;
+                i += 1;
+                continue;
+            }
+
+            if (is_new_word) {
+                buffer[i] = std.ascii.toUpper(char);
+                is_new_word = false;
+            }
+
+            i += 1;
+        }
+    }
+
     /// Creates a String from a given range
     /// User is responsible for managing the new String
     pub fn substr(self: String, start: usize, end: usize) Error!String {

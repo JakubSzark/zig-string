@@ -289,3 +289,15 @@ test "rfind Tests" {
 
     try expectEqual(myString.rfind("hi"), 9);
 }
+
+test "toCapitalized Tests" {
+    var arena = ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+
+    var myString = try String.init_with_contents(arena.allocator(), "love and be loved");
+    defer myString.deinit();
+
+    myString.toCapitalized();
+
+    try expectEqualStrings(myString.str(), "Love And Be Loved");
+}

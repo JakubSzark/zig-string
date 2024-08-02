@@ -109,6 +109,7 @@ If there are any issues with <b>complexity</b> please <b>open an issue</b>
 | toLowercase        | Converts (ASCII) characters to lowercase                                 |
 | toOwned            | Creates an owned slice of the String                                     |
 | toUppercase        | Converts (ASCII) characters to uppercase                                 |
+| toCapitalized      | Converts the first (ASCII) character of each word to uppercase           |
 | trim               | Removes whitelist from both ends                                         |
 | trimEnd            | Remove whitelist from the end                                            |
 | trimStart          | Remove whitelist from the start                                          |
