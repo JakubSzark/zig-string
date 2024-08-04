@@ -1,5 +1,4 @@
 const std = @import("std");
-const ArenaAllocator = std.heap.ArenaAllocator;
 const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
 const expectEqualStrings = std.testing.expectEqualStrings;
@@ -8,12 +7,8 @@ const zig_string = @import("./zig-string.zig");
 const String = zig_string.String;
 
 test "Basic Usage" {
-    // Use your favorite allocator
-    var arena = ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-
     // Create your String
-    var myString = String.init(arena.allocator());
+    var myString = String.init(std.testing.allocator);
     defer myString.deinit();
 
     // Use functions provided
@@ -26,13 +21,8 @@ test "Basic Usage" {
 }
 
 test "String Tests" {
-    // Allocator for the String
-    const page_allocator = std.heap.page_allocator;
-    var arena = std.heap.ArenaAllocator.init(page_allocator);
-    defer arena.deinit();
-
     // This is how we create the String
-    var myStr = String.init(arena.allocator());
+    var myStr = String.init(std.testing.allocator);
     defer myStr.deinit();
 
     // allocate & capacity
@@ -123,7 +113,7 @@ test "String Tests" {
     try expectEqualStrings(myStr.split("💯", 5).?, "Hello");
     try expectEqualStrings(myStr.split("💯", 6).?, "");
 
-    var splitStr = String.init(arena.allocator());
+    var splitStr = String.init(std.testing.allocator);
     defer splitStr.deinit();
 
     try splitStr.concat("variable='value'");
@@ -131,7 +121,8 @@ test "String Tests" {
     try expectEqualStrings(splitStr.split("=", 1).?, "'value'");
 
     // splitAll
-    const splitAllStr = try String.init_with_contents(arena.allocator(), "THIS IS A  TEST");
+    var splitAllStr = try String.init_with_contents(std.testing.allocator, "THIS IS A  TEST");
+    defer splitAllStr.deinit();
     const splitAllSlices = try splitAllStr.splitAll(" ");
 
     try expectEqual(splitAllSlices.len, 5);
@@ -149,7 +140,10 @@ test "String Tests" {
     try expectEqualStrings(newSplit.?.str(), "variable");
 
     // splitAllToStrings
-    const splitAllStrings = try splitAllStr.splitAllToStrings(" ");
+    var splitAllStrings = try splitAllStr.splitAllToStrings(" ");
+    defer for (splitAllStrings) |*str| {
+        str.deinit();
+    };
 
     try expectEqual(splitAllStrings.len, 5);
     try expectEqualStrings(splitAllStrings[0].str(), "THIS");
@@ -161,8 +155,12 @@ test "String Tests" {
     // lines
     const lineSlice = "Line0\r\nLine1\nLine2";
 
-    var lineStr = try String.init_with_contents(arena.allocator(), lineSlice);
+    var lineStr = try String.init_with_contents(std.testing.allocator, lineSlice);
+    defer lineStr.deinit();
     var linesSlice = try lineStr.lines();
+    defer for (linesSlice) |*str| {
+        str.deinit();
+    };
 
     try expectEqual(linesSlice.len, 3);
     try expect(linesSlice[0].cmp("Line0"));
@@ -193,7 +191,7 @@ test "String Tests" {
     // owned
     const mySlice = try myStr.toOwned();
     try expectEqualStrings(mySlice.?, "This is a Test!");
-    arena.allocator().free(mySlice.?);
+    std.testing.allocator.free(mySlice.?);
 
     // StringIterator
     var i: usize = 0;
@@ -217,23 +215,16 @@ test "String Tests" {
 }
 
 test "init with contents" {
-    // Allocator for the String
-    const page_allocator = std.heap.page_allocator;
-    var arena = std.heap.ArenaAllocator.init(page_allocator);
-    defer arena.deinit();
-
     const initial_contents = "String with initial contents!";
 
     // This is how we create the String with contents at the start
-    var myStr = try String.init_with_contents(arena.allocator(), initial_contents);
+    var myStr = try String.init_with_contents(std.testing.allocator, initial_contents);
+    defer myStr.deinit();
     try expectEqualStrings(myStr.str(), initial_contents);
 }
 
 test "startsWith Tests" {
-    var arena = ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-
-    var myString = String.init(arena.allocator());
+    var myString = String.init(std.testing.allocator);
     defer myString.deinit();
 
     try myString.concat("bananas");
@@ -242,10 +233,7 @@ test "startsWith Tests" {
 }
 
 test "endsWith Tests" {
-    var arena = ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-
-    var myString = String.init(arena.allocator());
+    var myString = String.init(std.testing.allocator);
     defer myString.deinit();
 
     try myString.concat("asbananas");
@@ -259,11 +247,8 @@ test "endsWith Tests" {
 }
 
 test "replace Tests" {
-    var arena = ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-
     // Create your String
-    var myString = String.init(arena.allocator());
+    var myString = String.init(std.testing.allocator);
     defer myString.deinit();
 
     try myString.concat("hi,how are you");
@@ -281,20 +266,14 @@ test "replace Tests" {
 }
 
 test "rfind Tests" {
-    var arena = ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-
-    var myString = try String.init_with_contents(arena.allocator(), "💯hi💯💯hi💯💯hi💯");
+    var myString = try String.init_with_contents(std.testing.allocator, "💯hi💯💯hi💯💯hi💯");
     defer myString.deinit();
 
     try expectEqual(myString.rfind("hi"), 9);
 }
 
 test "toCapitalized Tests" {
-    var arena = ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-
-    var myString = try String.init_with_contents(arena.allocator(), "love and be loved");
+    var myString = try String.init_with_contents(std.testing.allocator, "love and be loved");
     defer myString.deinit();
 
     myString.toCapitalized();
