@@ -594,6 +594,7 @@ pub const String = struct {
         if (self.buffer) |buffer| {
             const InputSize = self.size;
             const size = std.mem.replacementSize(u8, buffer[0..InputSize], needle, replacement);
+            defer self.allocator.free(buffer);
             self.buffer = self.allocator.alloc(u8, size) catch {
                 return Error.OutOfMemory;
             };
