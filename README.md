@@ -119,3 +119,4 @@ If there are any issues with <b>complexity</b> please <b>open an issue</b>
 | startsWith         | Determines if the given string begins with the given value               |
 | endsWith           | Determines if the given string ends with the given value                 |
 | replace            | Replace all occurrences of the search string with the replacement string |
+| hasValue           | Determines if the string has value based on given non-value characters   |

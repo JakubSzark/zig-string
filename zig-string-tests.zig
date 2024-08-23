@@ -280,3 +280,38 @@ test "toCapitalized Tests" {
 
     try expectEqualStrings(myString.str(), "Love And Be Loved");
 }
+
+test "hasValue Tests" {
+    var hasValueString = try String.init_with_contents(std.testing.allocator, "love and be loved");
+    defer hasValueString.deinit();
+    
+    const hasValue = hasValueString.hasValue(" ");
+    
+    try expect(hasValue == true);
+
+
+    var hasNoValueString = try String.init_with_contents(std.testing.allocator, "  ooo,ooo ");
+    defer hasNoValueString.deinit();
+
+    const noValue = hasNoValueString.hasValue(" o,");
+
+    try expect(noValue == false);
+
+
+    var noLengthString = String.init(std.testing.allocator);
+    defer noLengthString.deinit();
+
+    try expect(noLengthString.hasValue(" ") == false);
+
+
+    var utf8ValueString = try String.init_with_contents(std.testing.allocator, "💯hello💯💯hello💯💯hello💯");
+    defer utf8ValueString.deinit();
+
+    const utf8HasValue = utf8ValueString.hasValue("💯");
+
+    try expect(utf8HasValue == true);
+
+    const utf8HasNoValue = utf8ValueString.hasValue("💯hello");
+
+    try expect(utf8HasNoValue == false);
+}

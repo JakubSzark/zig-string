@@ -606,4 +606,21 @@ pub const String = struct {
         }
         return false;
     }
+
+    /// Determins if the current string has value based on specified non-value characters
+    pub fn hasValue(self: *String, no_value_chars: []const u8) bool {
+        if (self.buffer) |buffer| {
+            var i: usize = 0;
+            while (i < self.size) {
+                const size = String.getUTF8Size(buffer[i]);
+                const found_index = std.mem.indexOf(u8, no_value_chars, buffer[i..i+size]);
+
+                if (found_index == null) return true;
+
+                i += size;
+            }
+        }
+
+        return false;
+    }
 };
