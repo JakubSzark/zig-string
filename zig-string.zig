@@ -606,4 +606,38 @@ pub const String = struct {
         }
         return false;
     }
+
+    /// Checks if the needle String is within the source String
+    pub fn includesString(self: *String, needle: String) bool {
+
+        if (self.size == 0 or needle.size == 0) return false;
+
+        if (self.buffer) |buffer| {
+            if (needle.buffer) |needle_buffer| {
+                const found_index = std.mem.indexOf(u8, buffer[0..self.size], needle_buffer[0..needle.size]);
+
+                if (found_index == null) return false;
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// Checks if the needle literal is within the source String
+    pub fn includesLiteral(self: *String, needle: []const u8) bool {
+
+        if (self.size == 0 or needle.len == 0) return false;
+
+        if (self.buffer) |buffer| {
+            const found_index = std.mem.indexOf(u8, buffer[0..self.size], needle);
+
+            if (found_index == null) return false;
+
+            return true;
+        }
+
+        return false;
+    }
 };
