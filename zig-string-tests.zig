@@ -280,3 +280,24 @@ test "toCapitalized Tests" {
 
     try expectEqualStrings(myString.str(), "Love And Be Loved");
 }
+
+test "includes Tests" {
+    var myString = try String.init_with_contents(std.testing.allocator, "love and be loved");
+    defer myString.deinit();
+
+    var needle = try String.init_with_contents(std.testing.allocator, "be");
+    defer needle.deinit();
+
+    try expect(myString.includesLiteral("and"));
+    try expect(myString.includesString(needle));
+
+    try needle.concat("t");
+
+    try expect(myString.includesLiteral("tiger") == false);
+    try expect(myString.includesString(needle) == false);
+
+    needle.clear();
+
+    try expect(myString.includesLiteral("") == false);
+    try expect(myString.includesString(needle) == false);
+}
