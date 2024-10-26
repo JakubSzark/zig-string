@@ -7,7 +7,7 @@ pub fn build(b: *std.Build) void {
     _ = b.addModule("string", .{ .root_source_file = b.path("zig-string.zig") });
 
     var main_tests = b.addTest(.{
-        .root_source_file = b.path("zig-string-tests.zig"),
+        .root_source_file = b.path("zig-string"),
         .target = target,
         .optimize = optimize,
     });
