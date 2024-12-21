@@ -10,7 +10,7 @@ Also it may be useful for some people who need it (including myself), with futur
 
 ```zig
 const std = @import("std");
-const String = @import("./zig-string.zig").String;
+const String = @import("./zig-string.zig");
 // ...
 
 // Use your favorite allocator
@@ -59,7 +59,7 @@ And add this to you build.zig
 You can then import the library into your code like this
 
 ```zig
-const String = @import("string").String;
+const String = @import("string");
 ```
 
 # How to Contribute
