@@ -4,7 +4,7 @@ const expectEqual = std.testing.expectEqual;
 const expectEqualStrings = std.testing.expectEqualStrings;
 
 const zig_string = @import("./zig-string.zig");
-const String = zig_string.String;
+const String = zig_string;
 
 test "Basic Usage" {
     // Create your String
