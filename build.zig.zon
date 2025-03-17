@@ -1,6 +1,6 @@
 .{
-      .name = "zig-string",
-      .version = "0.9.0",
-      .paths = .{""},
+    .fingerprint = 0xd2ee692e004129ce,
+    .name = .zig_string,
+    .version = "0.9.0",
+    .paths = .{""},
 }
- 
