@@ -49,9 +49,9 @@ var myString = String.init();
 defer myString.deinit(arena.allocator());
 
 // Use functions provided
-try myString.concat(arena, "🔥 Hello!");
+try myString.concat(arena.allocator(), "🔥 Hello!");
 _ = myString.pop();
-try myString.concat(arena, ", World 🔥");
+try myString.concat(arena.allocator(), ", World 🔥");
 
 // Success!
 std.debug.assert(myString.cmp("🔥 Hello, World 🔥"));
