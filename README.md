@@ -46,7 +46,7 @@ defer arena.deinit();
 
 // Create your String
 var myString = String.init();
-defer myString.deinit(arena);
+defer myString.deinit(arena.allocator());
 
 // Use functions provided
 try myString.concat(arena, "🔥 Hello!");
