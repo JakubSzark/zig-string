@@ -3,7 +3,7 @@ const expect = std.testing.expect;
 const expectEqual = std.testing.expectEqual;
 const expectEqualStrings = std.testing.expectEqualStrings;
 
-const zig_string = @import("./zig-string.zig");
+const zig_string = @import("root.zig");
 const String = zig_string.String;
 
 test "Basic Usage" {
