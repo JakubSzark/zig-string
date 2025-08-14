@@ -10,7 +10,7 @@ Also it may be useful for some people who need it (including myself), with futur
 
 ```zig
 const std = @import("std");
-const String = @import("./zig-string.zig").String;
+const String = @import("zig-string.zig").String;
 // ...
 
 // Use your favorite allocator
@@ -42,7 +42,11 @@ Add this to your build.zig.zon
         //the correct hash will be suggested by zig
     }
 }
+```
+Or run:
 
+```bash
+zig fetch --save git+https://github.com/JakubSzark/zig-string.git
 ```
 
 And add this to you build.zig

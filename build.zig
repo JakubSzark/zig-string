@@ -21,7 +21,7 @@ pub fn build(b: *std.Build) void {
 
     const tests = b.step("test", "Run library tests");
     const lldb_test = b.step("debug", "Run library tests from lldb");
-    const install_test = b.step("build_debug", "Install tests to zig-out/bin");
+    const install_test = b.step("build_debug", "Install tests to zig-out/bin/");
     tests.dependOn(&run_lib_unit_tests.step);
 
     install_test.dependOn(&main_tests.step);
