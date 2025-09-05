@@ -184,9 +184,11 @@ test "String Tests" {
     try expectEqual(myStr.size, 0);
 
     // writer
-    const writer = myStr.writer();
-    const length = try writer.write("This is a Test!");
+    var writer = myStr.writer(&.{});
+    const w = &writer.interface;
+    const length = try w.write("This is a Test!");
     try expectEqual(length, 15);
+    try w.flush();
 
     // owned
     const mySlice = try myStr.toOwned();
