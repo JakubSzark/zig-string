@@ -359,15 +359,16 @@ pub const String = struct {
 
     /// Splits the String into slices, based on a delimiter.
     pub fn splitAll(self: *const String, delimiters: []const u8) ![][]const u8 {
-        var splitArr = std.ArrayList([]const u8).init(std.heap.page_allocator);
-        defer splitArr.deinit();
+        const allocator = std.heap.page_allocator;
+        var splitArr: std.ArrayList([]const u8) = .empty;
+        errdefer splitArr.deinit(allocator);
 
         var i: usize = 0;
         while (self.split(delimiters, i)) |slice| : (i += 1) {
-            try splitArr.append(slice);
+            try splitArr.append(allocator, slice);
         }
 
-        return try splitArr.toOwnedSlice();
+        return try splitArr.toOwnedSlice(allocator);
     }
 
     /// Splits the String into a new string, based on delimiters and an index
@@ -385,22 +386,20 @@ pub const String = struct {
     /// Splits the String into a slice of new Strings, based on delimiters.
     /// The user of this function is in charge of the memory of the new Strings.
     pub fn splitAllToStrings(self: *const String, delimiters: []const u8) ![]String {
-        var splitArr = std.ArrayList(String).init(std.heap.page_allocator);
-        defer splitArr.deinit();
+        const allocator = std.heap.page_allocator;
+        var splitArr: std.ArrayList(String) = .empty;
+        errdefer splitArr.deinit(allocator);
 
         var i: usize = 0;
         while (try self.splitToString(delimiters, i)) |splitStr| : (i += 1) {
-            try splitArr.append(splitStr);
+            try splitArr.append(allocator, splitStr);
         }
 
-        return try splitArr.toOwnedSlice();
+        return try splitArr.toOwnedSlice(allocator);
     }
 
     /// Splits the String into a slice of Strings by new line (\r\n or \n).
     pub fn lines(self: *String) ![]String {
-        var lineArr = std.ArrayList(String).init(std.heap.page_allocator);
-        defer lineArr.deinit();
-
         var selfClone = try self.clone();
         defer selfClone.deinit();
 
