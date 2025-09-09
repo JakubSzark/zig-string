@@ -359,15 +359,16 @@ pub const String = struct {
 
     /// Splits the String into slices, based on a delimiter.
     pub fn splitAll(self: *const String, delimiters: []const u8) ![][]const u8 {
-        var splitArr = std.ArrayList([]const u8).init(std.heap.page_allocator);
-        defer splitArr.deinit();
+        const allocator = std.heap.page_allocator;
+        var splitArr: std.ArrayList([]const u8) = .empty;
+        errdefer splitArr.deinit(allocator);
 
         var i: usize = 0;
         while (self.split(delimiters, i)) |slice| : (i += 1) {
-            try splitArr.append(slice);
+            try splitArr.append(allocator, slice);
         }
 
-        return try splitArr.toOwnedSlice();
+        return try splitArr.toOwnedSlice(allocator);
     }
 
     /// Splits the String into a new string, based on delimiters and an index
@@ -385,22 +386,20 @@ pub const String = struct {
     /// Splits the String into a slice of new Strings, based on delimiters.
     /// The user of this function is in charge of the memory of the new Strings.
     pub fn splitAllToStrings(self: *const String, delimiters: []const u8) ![]String {
-        var splitArr = std.ArrayList(String).init(std.heap.page_allocator);
-        defer splitArr.deinit();
+        const allocator = std.heap.page_allocator;
+        var splitArr: std.ArrayList(String) = .empty;
+        errdefer splitArr.deinit(allocator);
 
         var i: usize = 0;
         while (try self.splitToString(delimiters, i)) |splitStr| : (i += 1) {
-            try splitArr.append(splitStr);
+            try splitArr.append(allocator, splitStr);
         }
 
-        return try splitArr.toOwnedSlice();
+        return try splitArr.toOwnedSlice(allocator);
     }
 
     /// Splits the String into a slice of Strings by new line (\r\n or \n).
     pub fn lines(self: *String) ![]String {
-        var lineArr = std.ArrayList(String).init(std.heap.page_allocator);
-        defer lineArr.deinit();
-
         var selfClone = try self.clone();
         defer selfClone.deinit();
 
@@ -486,44 +485,65 @@ pub const String = struct {
     }
 
     // Writer functionality for the String.
-    pub usingnamespace struct {
-        pub const Writer = std.io.Writer(*String, Error, appendWrite);
+    // pub const Writer = std.io.Writer(*String, Error, appendWrite);
+    pub const Writer = struct {
+        string: *String,
+        interface: std.Io.Writer,
+        err: ?Error = null,
 
-        pub fn writer(self: *String) Writer {
-            return .{ .context = self };
-        }
-
-        fn appendWrite(self: *String, m: []const u8) !usize {
-            try self.concat(m);
-            return m.len;
-        }
-    };
-
-    // Iterator support
-    pub usingnamespace struct {
-        pub const StringIterator = struct {
-            string: *const String,
-            index: usize,
-
-            pub fn next(it: *StringIterator) ?[]const u8 {
-                if (it.string.buffer) |buffer| {
-                    if (it.index == it.string.size) return null;
-                    const i = it.index;
-                    it.index += String.getUTF8Size(buffer[i]);
-                    return buffer[i..it.index];
-                } else {
-                    return null;
-                }
-            }
-        };
-
-        pub fn iterator(self: *const String) StringIterator {
-            return StringIterator{
-                .string = self,
-                .index = 0,
+        fn drain(w: *std.Io.Writer, data: []const []const u8, splat: usize) std.Io.Writer.Error!usize {
+            _ = splat;
+            const a: *@This() = @alignCast(@fieldParentPtr("interface", w));
+            const buffered = w.buffered();
+            if (buffered.len != 0) return w.consume(a.string.appendWrite(buffered) catch |err| {
+                a.err = err;
+                return error.WriteFailed;
+            });
+            return a.string.appendWrite(data[0]) catch |err| {
+                a.err = err;
+                return error.WriteFailed;
             };
         }
     };
+
+    pub fn writer(self: *String, buffer: []u8) Writer {
+        return .{
+            .string = self,
+            .interface = .{
+                .buffer = buffer,
+                .vtable = &.{ .drain = Writer.drain },
+            },
+        };
+    }
+
+    fn appendWrite(self: *String, m: []const u8) !usize {
+        try self.concat(m);
+        return m.len;
+    }
+
+    // Iterator support
+    pub const StringIterator = struct {
+        string: *const String,
+        index: usize,
+
+        pub fn next(it: *StringIterator) ?[]const u8 {
+            if (it.string.buffer) |buffer| {
+                if (it.index == it.string.size) return null;
+                const i = it.index;
+                it.index += String.getUTF8Size(buffer[i]);
+                return buffer[i..it.index];
+            } else {
+                return null;
+            }
+        }
+    };
+
+    pub fn iterator(self: *const String) StringIterator {
+        return StringIterator{
+            .string = self,
+            .index = 0,
+        };
+    }
 
     /// Returns whether or not a character is whitelisted
     fn inWhitelist(char: u8, whitelist: []const u8) bool {
@@ -609,7 +629,6 @@ pub const String = struct {
 
     /// Checks if the needle String is within the source String
     pub fn includesString(self: *String, needle: String) bool {
-
         if (self.size == 0 or needle.size == 0) return false;
 
         if (self.buffer) |buffer| {
@@ -627,7 +646,6 @@ pub const String = struct {
 
     /// Checks if the needle literal is within the source String
     pub fn includesLiteral(self: *String, needle: []const u8) bool {
-
         if (self.size == 0 or needle.len == 0) return false;
 
         if (self.buffer) |buffer| {
