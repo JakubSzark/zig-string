@@ -122,7 +122,7 @@ pub const String = struct {
 
                 i = 0;
                 while (i < literal.len) : (i += 1) {
-                    buffer[index + i] = literal[i];
+                    buffer[k + i] = literal[i];
                 }
             }
         }
