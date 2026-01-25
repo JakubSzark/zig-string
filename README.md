@@ -88,6 +88,7 @@ If there are any issues with <b>complexity</b> please <b>open an issue</b>
 | deinit             | De-allocates the String                                                  |
 | find               | Finds first string literal appearance                                    |
 | rfind              | Finds last string literal appearance                                     |
+| count              | Returns the number of occurences of the string literal                   |
 | includesLiteral    | Whether or not the provided literal is in the String                     |
 | includesString     | Whether or not the provided String is within the String                  |
 | init               | Creates a String with an Allocator                                       |

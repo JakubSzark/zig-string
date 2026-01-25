@@ -303,3 +303,17 @@ test "includes Tests" {
     try expect(myString.includesLiteral("") == false);
     try expect(myString.includesString(needle) == false);
 }
+
+test "count Tests" {
+    var myString = String.init(std.testing.allocator);
+    defer myString.deinit();
+
+    try myString.concat("If two witches were watching two watches, which witch would watch which watch?");
+
+    try expect(myString.count("") == 0);
+    try expect(myString.count("I") == 1);
+    try expect(myString.count("two") == 2);
+    try expect(myString.count("watch") == 4);
+    try expect(myString.count("watch ") == 1);
+    try expect(myString.count("abararabararara") == 0);
+}

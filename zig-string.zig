@@ -237,6 +237,32 @@ pub const String = struct {
         return null;
     }
 
+    /// Returns the number of occurences of the string literal
+    /// ### example
+    /// ```zig
+    /// var str = String.init(allocator);
+    /// defer str.deinit();
+    ///
+    /// try str.concat("foo bar foo");
+    ///
+    /// _ = str.count("bar"); // 1
+    /// _ = str.count("foo"); // 2
+    /// _ = str.count("bee"); // 0
+    /// _ = str.count(""); // 0
+    ///
+    /// ```
+    pub fn count(self: String, literal: []const u8) ?usize {
+        if (literal.len == 0) {
+            return 0;
+        }
+
+        if (self.buffer) |buffer| {
+            return std.mem.count(u8, buffer, literal);
+        }
+
+        return null;
+    }
+
     /// Removes a character at the specified index
     pub fn remove(self: *String, index: usize) Error!void {
         try self.removeRange(index, index + 1);
