@@ -175,7 +175,7 @@ pub const String = struct {
         if (self.buffer != null) {
             const string = self.str();
             if (self.allocator.alloc(u8, string.len)) |newStr| {
-                std.mem.copyForwards(u8, newStr, string);
+                @memmove(newStr, string);
                 return newStr;
             } else |_| {
                 return Error.OutOfMemory;
@@ -343,7 +343,7 @@ pub const String = struct {
         try self.allocate(self.size * (n + 1));
         if (self.buffer) |buffer| {
             for (1..n + 1) |i| {
-                std.mem.copyForwards(u8, buffer[self.size * i ..], buffer[0..self.size]);
+                @memmove(buffer[self.size * i .. self.size * (i + 1)], buffer[0..self.size]);
             }
 
             self.size *= (n + 1);
